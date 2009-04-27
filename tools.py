@@ -8,26 +8,35 @@ import csv
 import numpy as np
 
 def importData(address):
-        try:
-            input = open(address, "r")
-            inputCsv = csv.reader(input, delimiter=";", lineterminator="\n")
-        except IOError:
-            print "I/O error with the specified file"
+    try:
+        inputcsv = csv.reader(open(address, "r"), delimiter=";", lineterminator="\n")
+    except IOError:
+        print "I/O error with the specified file"
 
-        data = list() # all data
-        item = list() # each tabular
-        count = 0
-        for row in inputCsv:
-            if count < 2 : # read Time period and number of product
-                data.append(int(row[1]))
-            else :
-                item.append(row[1:])
-                if ((count-2)%data[1] == 1):
-                    data.append(np.array(item, dtype=float))
-                    item = list()
-            count += 1
-        data.append(np.array(item, dtype=float)) # manage the last tabular
-        return data
+    data = list() # all data
+    item = list() # each tabular
+    count = 0
+    for row in inputcsv:
+        if count < 2 : # read Time period and number of product
+            data.append(int(row[1]))
+        else :
+            item.append(row[1:])
+            if ((count-2)%data[1] == 1):
+                data.append(np.array(item, dtype=float))
+                item = list()
+        count += 1
+    data.append(np.array(item, dtype=float)) # manage the last tabular
+    return data
+
+def printtab(tabular):
+    row,col = tabular.shape
+    tab = ""
+    for i in xrange(row):
+        tab += "\n\t|"
+        for j in xrange(col):
+            tab += str(tabular[i][j])+"|"
+    print tab
+
 
 if __name__ == '__main__':
     test = importData("data_test.csv")
