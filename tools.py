@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 #       Copyright 2009 Guillaume Lanquepin <guillaume@himolde.no>
 #       version 0.1
@@ -7,7 +8,7 @@
 import csv
 import numpy as np
 
-def importData(address):
+def import_data(address):
     try:
         inputcsv = csv.reader(open(address, "r"), delimiter=";", lineterminator="\n")
     except IOError:
@@ -28,7 +29,7 @@ def importData(address):
     data.append(np.array(item, dtype=float)) # manage the last tabular
     return data
 
-def printtab(tabular):
+def print_tab(tabular):
     row,col = tabular.shape
     tab = ""
     for i in xrange(row):
@@ -39,6 +40,6 @@ def printtab(tabular):
 
 
 if __name__ == '__main__':
-    test = importData("data_test.csv")
+    test = import_data("data_test.csv")
     print test
 
