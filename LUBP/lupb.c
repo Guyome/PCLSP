@@ -25,8 +25,6 @@ int main(int argc, char *argv[])
     c[t]= demand[t][t]*( price[t][t] - prod[t])-setup[t];
     f[t+1] = -c[t];
     ind[0] = 0;
-    //printf("Price[%d][%d]: %f\n",0,0,price[0][0]);
-    //printf("demand[%d][%d]: %f\n",0,0,demand[0][0]);
     for ( t = 1; t < hor;  t++)
     {
         for (t0 = 0; t0 <= t; t0++)
@@ -40,8 +38,6 @@ int main(int argc, char *argv[])
             // compute price and demand
             price[t][t0] = (alpha[t] + (prod[t0] + sumstor)* beta[t]) / (2 * beta[t] );
             demand[t][t0] = alpha[t] - beta[t] * price[t][t0];
-            //printf("Price[%d][%d]: %f\n",t,t0,price[t][t0]);
-            //printf("demand[%d][%d]: %f\n",t,t0,demand[t][t0]);
         }
         for (t0 = 0; t0 <= t; t0++)
         {
@@ -54,10 +50,8 @@ int main(int argc, char *argv[])
                     sumstor += stor[j];
                 }
                 sum += (prod[t0] + sumstor - price[j][t0])*demand[j][t0];
-                //printf("sum:%f\t t0:%d\ti: %d\t t: %d\n",sum,t0,k,t);
             }
             c[t0] = sum + setup[t0];
-            //printf("c[%d]: %f\tsetup[%d]: %f\t sum: %f\n",t0,c[t0],t0,setup[t0],sum);
         }
         // compute minimal criterium
         summin = 0;
@@ -67,10 +61,8 @@ int main(int argc, char *argv[])
             {
                 summin = c[t0] + f[t0];
                 ind[t] = t0;
-                printf("ind[%d]: %d\n",t,t0);
             }
         }
-        f[t+1] = summin;
     }
     printf("t \t F[t] \t Ind\n");
     printf("--------------------------------\n");
