@@ -48,11 +48,11 @@ IPOPTINCDIR = ${prefix}/include/coin
 # Directory with libipopt.a
 IPOPTLIBDIR = ${exec_prefix}/lib
 exec_prefix = ${prefix}
-prefix = /usr/local
+prefix = /usr/
 
 # Libraries necessary to link with IPOPT
 #LIBS = -L$(IPOPTLIBDIR) -lipopt @IPADDLIBS@
-LIBS = -L$(IPOPTLIBDIR) -lipopt -lpthread  -llapack -lblas -lm  -ldl  -L/usr/lib/gcc/i486-linux-gnu/4.3.2 -L/usr/lib/gcc/i486-linux-gnu/4.3.2/../../../../lib -L/lib/../lib -L/usr/lib/../lib -L/usr/lib/gcc/i486-linux-gnu/4.3.2/../../..  -lgfortranbegin -lgfortran -lm -lgcc_s
+LIBS = -L$(IPOPTLIBDIR) -lipopt -lpthread  -llapack -lblas -lm  -ldl  -L/usr/lib/gcc/i486-linux-gnu/4.3.2 -L/usr/lib/gcc/i486-linux-gnu/4.3.2/../../../../lib -L/lib/../lib -L/usr/lib/../lib -L/usr/lib/gcc/i486-linux-gnu/4.3.2/../../.. -lm -lgcc_s
 
 # Necessary Include dirs (we use the CYGPATH_W variables to allow
 # compilation with Windows compilers)
