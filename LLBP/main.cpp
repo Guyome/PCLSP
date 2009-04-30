@@ -8,15 +8,34 @@
 using namespace Ipopt;
 
 int main(int argv, char* argc[]) {
-    int T = 4;
-    float a[]={100.,100.,100.,100.};//coeff demand function
-    float b[]={1.,1.,1.,1.};//coeff demand function
-    float v[]={20.,20.,20.,20.};//production cost
-    float h[]={2.,2.,2.,2.};//storage cost
-    float r[]={18., 20., 32., 12.};
+    int T = 4;//number of time T
+    int J = 1;//number of product
+    float r[]={18., 20., 32., 12.};//constraint
+    float** al = new float*[T];//coeff demand function
+    float** b = new float*[T] ;//coeff demand function
+    float** v = new float*[T];//production cost
+    float** h = new float*[T];//storage cost
+    float** a = new float*[T]; //consumption
+    for (int i = 0; i < T; i ++)
+    {
+        al[i] = new float [J];
+        b[i] = new float [J] ;
+        v[i] = new float [J];
+        h[i] = new float [J];
+        a[i] = new float [J];
+        for (int j = 0; j < J; j ++)
+        {
+            al[i][j] = 100.;
+            b[i][j] = 1.;
+            v[i][j] = 20.;
+            h[i][j] = 2.;
+            a[i][j] = 1;
+        }
+        
+    }
 
     // Create an instance of your nlp...
-    SmartPtr<TNLP> mynlp = new FreeSolver(a,b,v,h,r,T);
+    SmartPtr<TNLP> mynlp = new FreeSolver(al,b,v,h,a,(float*)r,T,J);
 
     // Create an instance of the IpoptApplication
     SmartPtr<IpoptApplication> app = new IpoptApplication();

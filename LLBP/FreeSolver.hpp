@@ -13,8 +13,8 @@ class FreeSolver : public TNLP
 {
     public:
     /** default constructor */
-    FreeSolver(float* alpha,float* beta, float* prod,float* stor,
-                    float* constraint, float* consumption, int period, int product);
+    FreeSolver(float** alpha,float** beta, float** prod,float** stor,
+                    float** consumption, float* constraint, int period, int product);
 
     /** default destructor */
     virtual ~FreeSolver();
@@ -91,12 +91,12 @@ class FreeSolver : public TNLP
     //@}
     int period;//number of time period
     int product;//number of product
-    float* alpha;//coeff of demand function
-    float* beta;//idem
-    float* prod;//production cost
-    float* stor;//holding cost
+    float** alpha;//coeff of demand function
+    float** beta;//idem
+    float** prod;//production cost
+    float** stor;//holding cost
+    float** consumption;//consumption of ressouce 
     float* constraint;//prodcution constraint
-    float* consumption;//consumption of ressouce 
 };
 
 

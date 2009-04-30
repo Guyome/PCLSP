@@ -7,26 +7,31 @@
 using namespace Ipopt;
 
 // constructor
-FreeSolver::FreeSolver(float* _alpha,float* _beta, float* _prod,float* _stor,
-                            float* _constraint, float* consumption, int _period, int _product);
+FreeSolver::FreeSolver(float** _alpha,float** _beta, float** _prod,
+            float** _stor, float** _consumption, float* _constraint, int _period, int _product)
 {
     period = _period;
     product = _product;
-    alpha = new float[period][product];
-    beta = new float[period][product];
-    prod = new float[period][product];
-    stor = new float[period][product];
+    alpha = new float*[period];
+    beta = new float*[period];
+    prod = new float*[period];
+    stor = new float*[period];
+    consumption = new float*[period];
     constraint = new float[period];
-    consumption = new float[period][product];
     for (int i = 0; i < period; i++)
     {
+        alpha[i] = new float[product];
+        beta[i] = new float[product];
+        prod[i] = new float[product];
+        stor[i] = new float[product];
+        consumption[i] = new float[product];
         for (int j = 0; j < product; j ++)
         {
             alpha[i][j]=_alpha[i][j];
             std::cout << "alpha["<< i<<"]["<< j<<"]="<<alpha[i][j]<<"\t";
             beta[i][j]=_beta[i][j];
             std::cout << "beta["<< i<<"]["<< j<<"]="<<beta[i][j]<<"\t";
-            prod[i][j]=_prod[i];
+            prod[i][j]=_prod[i][j];
             std::cout << "prod["<< i<<"]["<< j<<"]="<<prod[i][j]<<"\t";
             stor[i][j]=_stor[i][j];
             std::cout << "stor["<< i<<"]["<< j<<"]="<<stor[i][j]<<std::endl;
@@ -46,7 +51,7 @@ bool FreeSolver::get_nlp_info(Index& n, Index& m, Index& nnz_jac_g,
                             Index& nnz_h_lag, IndexStyleEnum& index_style) 
 {
     n = 3*period*product; //number of variable
-    m = (product+1)period; //number of constraint
+    m = (product+1)*period; //number of constraint
     nnz_jac_g = 5*period*product-1;//number of non zero value in constraint jacobian
     nnz_h_lag = product*period;//number of non zero value in lagrangian hessian
     index_style = TNLP::C_STYLE;// use the C style indexing (0-based)
@@ -61,20 +66,27 @@ bool FreeSolver::get_bounds_info(Index n, Number* x_l, Number* x_u,
     // If desired, we could assert to make sure they are what we think they are.
     assert(n == 3*period*product);
     assert(m == (product+1)*period);
-    
+    Index idx=0;
     for (Index i=0; i<n; i++) 
     {
         x_l[i] = 0.0; // the variables are positives
         x_u[i] = 2e19;  // have no upper bounds
     }
-    for (Index i=0; i<m; i++) 
+    // product*period equality contraint
+    for (Index i=0; i<period; i++) 
     {
-        g_l[i] = g_u[i] = alpha[i]; // product*priod equality contraint
-        if (i >= period*product)
+        for (Index j = 0; j < product; j ++)
         {
-            g_l[i] = 0.0;
-            g_u[i] = constraint[i-period*product]
+            g_l[idx] = g_u[idx] = alpha[i][j]; 
+            idx++;
         }
+    }
+    //inequality constraints
+    for (Index i=0; i<period; i++) 
+    {
+        g_l[idx] = 0.0;
+        g_u[idx] = constraint[i];
+        idx++;
     }
     return true;
 }
@@ -92,31 +104,29 @@ bool FreeSolver::get_starting_point(Index n, bool init_x, Number* x,
     assert(init_z == false);
     assert(init_lambda == false);
     //find the minimal of consumption per time period
-    float* max = new float[period];
+    float max = 0.0;
+    Index idx = 0;
     for ( Index i = 0; i < period; i++)
     {
-        max[i]=consumption[i][0];
-        for (Index j = 0; j < product; j += 1)
+        for (Index j = 0; j < product; j ++)
         {
-            if(max[i] < comsumption[i][j])
+            if(max < consumption[i][j])
             {
-                max[i] = comsumption[i][j];
+                max = consumption[i][j];
             }
         }
-        
-    }
-    // initialize to the given starting point
-    Index idx = 0;
-    for (Index i=0; i<period; i++)
-    {
+        // initialize to the given starting point
         for (Index j = 0; j < product; j++)
         {
-            x[idx] = constraint[i]/(max[i]*product); //production minimize the constraint
-            x[idx+period*product]=(alpha[i][j]-constraint[i][j])/beta[i][j]; //price to stay in feasible region
+            x[idx] = constraint[i]/(max*product); //production minimize the constraint
+            //price to stay in feasible region
+            x[idx+period*product]=(alpha[i][j]-constraint[i]/(max*product))/beta[i][j];
             x[idx+2*period*product]=0.;//no storage
             idx++;
         }
+        
     }
+    
     assert(idx == period*product);
     std::cout <<"*** INITIAL POINT\n";
     std::cout <<"Prod:\t"<<x[0]<<"\\"<<x[1]<<"\\"<<x[2]<<"\\"<<x[3]<<"\n";
@@ -165,12 +175,18 @@ bool FreeSolver::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g
     assert(m == (product+1)*period);
     int idx = 0;
     //equatlity constraint
-    g[idx] = x[0] - x[2*period] + beta[0]*x[period]; //no storage form time period 0
-    for(Index i=1; i<period;i++)
+    for(Index i=0; i<period;i++)
     {
-        for (Index j = 0; j < object; j ++)
+        for (Index j = 0; j < product; j ++)
         {
-            g[idx] = x[i+j] + x[2*period+i-1+j] - x[2*period+i+j] + beta[i][j]*x[period+i+j];
+            if (i == 0)
+            {
+                 g[idx] = x[i+j] - x[2*period+i+j] + beta[i][j]*x[period+i+j];
+            }
+            else
+            {
+                g[idx] = x[i+j] + x[2*period+i-1+j] - x[2*period+i+j] + beta[i][j]*x[period+i+j];
+            }
             idx++;
         }
     }
@@ -231,9 +247,9 @@ bool FreeSolver::eval_jac_g(Index n, const Number* x, bool new_x,
             for (Index j = 0; j < product; j++)
             {
                 values[i+j]=1;
-                values[i+j+period=beta[i][j];
+                values[i+j+period]=beta[i][j];
                 values[i+j+2*period]=-1;
-                values[i+j+3*period]=-alpha[i][j];
+                values[i+j+3*period]=-consumption[i][j];
                 if (i<period-1)
                 {
                     values[i+j+4*period]=1;
@@ -285,9 +301,9 @@ void FreeSolver::finalize_solution(SolverReturn status,
               const IpoptData* ip_data,
               IpoptCalculatedQuantities* ip_cq) {
 
-    std::cout <<"*** RESULTS:\n";
+    /*std::cout <<"*** RESULTS:\n";
     std::cout <<"Dem:\t"<<alpha[0]-beta[0]*x[4]<<"\\"<<alpha[1]-beta[1]*x[5]<<"\\"<<alpha[2]-beta[2]*x[6]<<"\\"<<alpha[3]-beta[3]*x[7]<<"\n";
     std::cout <<"Prod:\t"<<x[0]<<"\\"<<x[1]<<"\\"<<x[2]<<"\\"<<x[3]<<"\n";
     std::cout <<"Stor:\t"<<x[8]<<"\\"<<x[9]<<"\\"<<x[10]<<"\\"<<x[11]<<"\n";
-    std::cout <<"Price:\t"<<x[4]<<"\\"<<x[5]<<"\\"<<x[6]<<"\\"<<x[7]<<"\n";
+    std::cout <<"Price:\t"<<x[4]<<"\\"<<x[5]<<"\\"<<x[6]<<"\\"<<x[7]<<"\n";*/
 }
