@@ -84,23 +84,40 @@ bool FreeSolver::get_starting_point(Index n, bool init_x, Number* x,
                             bool init_z, Number* z_L, Number* z_U,
                             Index m, bool init_lambda,
                             Number* lambda)
-    {
+{
     // Here, we assume we only have starting values for x, if you code
     // your own NLP, you can provide starting values for the dual variables
     // if you wish
     assert(init_x == true);
     assert(init_z == false);
     assert(init_lambda == false);
+    //find the minimal of consumption per time period
+    float* max = new float[period];
+    for ( Index i = 0; i < period; i++)
+    {
+        max[i]=consumption[i][0];
+        for (Index j = 0; j < product; j += 1)
+        {
+            if(max[i] < comsumption[i][j])
+            {
+                max[i] = comsumption[i][j];
+            }
+        }
+        
+    }
     // initialize to the given starting point
-    for (Index i=0; i<period; i++) {
-        x[i] = constraint[i]; //production is equal to constraint
+    Index idx = 0;
+    for (Index i=0; i<period; i++)
+    {
+        for (Index j = 0; j < product; j++)
+        {
+            x[idx] = constraint[i]/(max[i]*product); //production minimize the constraint
+            x[idx+period*product]=(alpha[i][j]-constraint[i][j])/beta[i][j]; //price to stay in feasible region
+            x[idx+2*period*product]=0.;//no storage
+            idx++;
+        }
     }
-    for(Index i=period;i<2*period;i++){
-        x[i]=(alpha[i-period]-constraint[i-period])/beta[i-period]; //price to stay in feasible region
-    }
-    for(Index i=2*period;i<3*period;i++){
-        x[i]=0.;//no storage
-    }
+    assert(idx == period*product);
     std::cout <<"*** INITIAL POINT\n";
     std::cout <<"Prod:\t"<<x[0]<<"\\"<<x[1]<<"\\"<<x[2]<<"\\"<<x[3]<<"\n";
     std::cout <<"Stor:\t"<<x[8]<<"\\"<<x[9]<<"\\"<<x[10]<<"\\"<<x[11]<<"\n";
@@ -127,13 +144,15 @@ bool FreeSolver::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
 bool FreeSolver::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f) 
 {
     assert(n == 3*period*product);
+    Index idx = 0;
     for(Index i=0; i<period;i++)
     {
         for (Index j = 0; j < product; j += 1)
         {
-        grad_f[i] = prod[i][j];
-        grad_f[period+i] = 2*beta[i][j]*x[period+i+j]-alpha[i][j];
-        grad_f[2*period+i] = stor[i][j];
+        grad_f[idx] = prod[i][j];
+        grad_f[idx+period*product] = 2*beta[i][j]*x[period+i+j]-alpha[i][j];
+        grad_f[idx+2*period*product] = stor[i][j];
+        idx++;
         }
     }
     return true;
@@ -154,7 +173,6 @@ bool FreeSolver::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g
             g[idx] = x[i+j] + x[2*period+i-1+j] - x[2*period+i+j] + beta[i][j]*x[period+i+j];
             idx++;
         }
-        idx++;
     }
     // inequality constraint
     for (Index i = 0; i < period; i++)
@@ -189,7 +207,7 @@ bool FreeSolver::eval_jac_g(Index n, const Number* x, bool new_x,
                 idx++;
             }
         }
-                // element due to the inequality constraint
+        // element due to the inequality constraint
         for(Index i=0; i<period*product;i++)
         {
             iRow[idx]=i+period*product;
@@ -215,13 +233,14 @@ bool FreeSolver::eval_jac_g(Index n, const Number* x, bool new_x,
                 values[i+j]=1;
                 values[i+j+period=beta[i][j];
                 values[i+j+2*period]=-1;
-                values[i+j+3*period]=alpha[i][j];
+                values[i+j+3*period]=-alpha[i][j];
                 if (i<period-1)
                 {
                     values[i+j+4*period]=1;
                 }
             }
         }
+        assert(idx == nele_jac);
     }
     return true;
 }
@@ -253,8 +272,8 @@ bool FreeSolver::eval_h(Index n, const Number* x, bool new_x,
                 values[idx] = 2*beta[i][j]*obj_factor;
                 idx++;
             }
-            idx++;
         }
+        assert(idx == nele_hess);
     }
     return true;
 }
