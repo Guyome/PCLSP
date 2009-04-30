@@ -8,10 +8,16 @@ import scipy.weave as wv
 from scipy.weave import converters
 import numpy as np
 
-def thomas(hor, alpha, beta, setup, prod, stor):
-
-    optiprice = np.zeros(hor,float)
-    thomas_code="""
+def thomas(clsp):
+    
+    hor = clsp.time_hor
+    alpha  = clsp.alpha
+    beta = clsp.beta
+    setup = clsp.cost_setup
+    prod = clsp.cost_prod
+    stor = clsp.cost_stor
+    optiprice = np.zeros(hor, float)
+    thomas_code = """
         //problem variable
         float c[hor];
         float f[hor];
@@ -22,9 +28,9 @@ def thomas(hor, alpha, beta, setup, prod, stor):
         float sumstor,sum,summin;
         
         //initiate price,demand since there is no storage
-        price[t][t] = (alpha[t] + prod[t] * beta[t]) / (2 * beta[t] );
-        demand[t][t] = alpha[t] - beta[t] * price[t][t];
-        c[t]= demand[t][t]*( price[t][t] - prod[t])-setup[t];
+        price[t][t] = (alpha(t) + prod(t) * beta(t)) / (2 * beta(t) );
+        demand[t][t] = alpha(t) - beta(t) * price[t][t];
+        c[t]= demand[t][t]*( price[t][t] - prod(t))-setup(t);
         f[t+1] = -c[t];
         ind[0] = 0;
         for ( t = 1; t < hor;  t++)
@@ -35,11 +41,11 @@ def thomas(hor, alpha, beta, setup, prod, stor):
                 sumstor = 0;
                 for (j = t0; j < t; j++)
                 {
-                    sumstor += stor[j];
+                    sumstor += stor(j);
                 }
                 // compute price and demand
-                price[t][t0] = (alpha[t] + (prod[t0] + sumstor)* beta[t]) / (2 * beta[t] );
-                demand[t][t0] = alpha[t] - beta[t] * price[t][t0];
+                price[t][t0] = (alpha(t) + (prod(t0) + sumstor)* beta(t)) / (2 * beta(t) );
+                demand[t][t0] = alpha(t) - beta(t) * price[t][t0];
             }
             for (t0 = 0; t0 <= t; t0++)
             {
@@ -49,11 +55,11 @@ def thomas(hor, alpha, beta, setup, prod, stor):
                     sumstor = 0;
                     for (k = t0; k < j; k++)
                     {
-                        sumstor += stor[j];
+                        sumstor += stor(j);
                     }
-                    sum += (prod[t0] + sumstor - price[j][t0])*demand[j][t0];
+                    sum += (prod(t0) + sumstor - price[j][t0])*demand[j][t0];
                 }
-                c[t0] = sum + setup[t0];
+                c[t0] = sum + setup(t0);
             }
             // compute minimal criterium
             summin = 0;
@@ -69,18 +75,9 @@ def thomas(hor, alpha, beta, setup, prod, stor):
         }
         for( t = 0; t < hor;  t++)
         {
-            optiprice[t]=price[t][ind[t]];
+            optiprice(t)=price[t][ind[t]];
         }
     """
-    wv.inline( thomas_code ,['hor' ,'alpha','beta','setup', 'prod', 'stor','optiprice'])#, \
-    #type_converters=converters.blitz)
-    return optiprice,np.array(optiprice > 0,int)
-
-if __name__ == '__main__':
-    hor= 3
-    alpha=np.array([50, 50, 100],float)
-    beta=np.array([2, 2, 2],float)
-    setup=np.array([11, 15, 11],float)
-    prod=np.array([10, 10, 10],float)
-    stor=np.array([1, 1, 1],float)
-    test = thomas(hor, alpha, beta, setup, prod, stor)
+    wv.inline( thomas_code , ['hor', 'alpha', 'beta', 'setup', 'prod', 'stor', 'optiprice'], \
+    type_converters=converters.blitz)
+    return optiprice, np.array(optiprice > 0, int)
