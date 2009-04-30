@@ -29,17 +29,7 @@ def import_data(address):
     data.append(np.array(item, dtype=float)) # manage the last tabular
     return data
 
-def print_tab(tabular):
-    row,col = tabular.shape
-    tab = ""
-    for i in xrange(row):
-        tab += "\n\t|"
-        for j in xrange(col):
-            tab += str(tabular[i][j])+"|"
-    print tab
-
-
 if __name__ == '__main__':
-    test = import_data("data_test.csv")
-    print test
+    TEST = import_data("data_test.csv")
+    print TEST
 
