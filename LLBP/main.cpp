@@ -35,7 +35,7 @@ int main(int argv, char* argc[]) {
     }
 
     // Create an instance of your nlp...
-    SmartPtr<TNLP> mynlp = new FreeSolver(al,b,v,h,a,(float*)r,T,J);
+    SmartPtr<TNLP> mynlp = new FreeSolver(al,b,v,h,a,r,T,J);
 
     // Create an instance of the IpoptApplication
     SmartPtr<IpoptApplication> app = new IpoptApplication();
