@@ -71,10 +71,6 @@ bool FreeSolver::get_bounds_info(Index n, Number* x_l, Number* x_u,
         x_l[i] = 0.0; // the variables are positives
         x_u[i] = 2e19;  // have no upper bounds
     }
-    for (Index i=0; i<period; i++) 
-    {
-        x_u[i] =  constraint[i];
-    }
     // price upper bound
     Index idx=period*product;
     for (Index i = 0; i < period; i ++)
