@@ -2,7 +2,6 @@
 //       version 0.1
 
 #include "FreeSolver.hpp"
-#include <iostream>
 
 using namespace Ipopt;
 
@@ -28,18 +27,12 @@ FreeSolver::FreeSolver(float** _alpha,float** _beta, float** _prod,
         for (int j = 0; j < product; j ++)
         {
             alpha[i][j]=_alpha[i][j];
-            std::cout << "alpha="<<alpha[i][j]<<"\t";
             beta[i][j]=_beta[i][j];
-            std::cout << "beta="<<beta[i][j]<<"\t";
             prod[i][j]=_prod[i][j];
-            std::cout << "prod="<<prod[i][j]<<"\t";
             stor[i][j]=_stor[i][j];
-            std::cout << "stor="<<stor[i][j]<<"\t";
             consumption[i][j]=_consumption[i][j];
-            std::cout << "consumption="<<consumption[i][j] << std::endl;
         }
         constraint[i]=_constraint[i];
-        std::cout << "constraint["<< i<<"]="<<constraint[i]<<std::endl;
     }
 }
 
@@ -139,10 +132,6 @@ bool FreeSolver::get_starting_point(Index n, bool init_x, Number* x,
     }
     
     assert(idx == n);
-    std::cout <<"*** INITIAL POINT\n";
-    std::cout <<"Prod:\t"<<x[0]<<"\\"<<x[1]<<"\\"<<x[2]<<"\\"<<x[3]<<"\n";
-    std::cout <<"Stor:\t"<<x[8]<<"\\"<<x[9]<<"\\"<<x[10]<<"\\"<<x[11]<<"\n";
-    std::cout <<"Price:\t"<<x[4]<<"\\"<<x[5]<<"\\"<<x[6]<<"\\"<<x[7]<<"\n";
     return true;
 }
 
@@ -160,10 +149,6 @@ bool FreeSolver::eval_f(Index n, const Number* x, bool new_x, Number& obj_value)
             idx++;
         }
     }
-    /*std::cout <<"*** obj="<<obj_value<<"\n";
-    std::cout <<"Prod:\t"<<x[0]<<"\\"<<x[1]<<"\\"<<x[2]<<"\\"<<x[3]<<"\n";
-    std::cout <<"Stor:\t"<<x[8]<<"\\"<<x[9]<<"\\"<<x[10]<<"\\"<<x[11]<<"\n";
-    std::cout <<"Price:\t"<<x[4]<<"\\"<<x[5]<<"\\"<<x[6]<<"\\"<<x[7]<<"\n";*/
     return true;
 }
 
@@ -211,13 +196,10 @@ bool FreeSolver::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g
     for (Index i = 0; i < period; i++)
     {
         g[idx] = 0;
-        std::cout << "sum=";
         for (Index j = 0; j < product; j ++)
         {
             g[idx] += consumption[i][j]*x[j+i*product];
-            //std::cout << consumption[i][j] << "*" << x[j+i*product] << "+";
         }
-        //std::cout << "=" << g[idx] << "\n";
         idx++;
     }
     assert(idx == m);
@@ -327,10 +309,4 @@ void FreeSolver::finalize_solution(SolverReturn status,
                               Number obj_value,
               const IpoptData* ip_data,
               IpoptCalculatedQuantities* ip_cq) {
-
-    std::cout <<"*** RESULTS:\n";
-   std::cout <<"Dem:\t"<<alpha[0][0]-beta[0][0]*x[4]<<"\\"<<alpha[1][0]-beta[1][0]*x[5]<<"\\"<<alpha[2][0]-beta[2][0]*x[6]<<"\\"<<alpha[3][0]-beta[3][0]*x[7]<<"\n";
-    std::cout <<"Prod:\t"<<x[0]<<"\\"<<x[1]<<"\\"<<x[2]<<"\\"<<x[3]<<"\n";
-    std::cout <<"Stor:\t"<<x[8]<<"\\"<<x[9]<<"\\"<<x[10]<<"\\"<<x[11]<<"\n";
-    std::cout <<"Price:\t"<<x[4]<<"\\"<<x[5]<<"\\"<<x[6]<<"\\"<<x[7]<<"\n";
 }
