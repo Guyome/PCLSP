@@ -40,7 +40,7 @@ CXX = g++
 CXXFLAGS = -g -O3 -fomit-frame-pointer -pipe -DNDEBUG -pedantic-errors -Wimplicit -Wparentheses -Wreturn-type -Wcast-qual -Wall -Wpointer-arith -Wwrite-strings -Wconversion -Wno-unknown-pragmas
 
 # additional C++ Compiler options for linking
-CXXLINKFLAGS =  -Wl,--rpath -Wl,/usr/local/lib
+CXXLINKFLAGS =
 
 # Directory with header files
 IPOPTINCDIR = ${prefix}/include/coin
@@ -52,7 +52,7 @@ prefix = /usr/
 
 # Libraries necessary to link with IPOPT
 #LIBS = -L$(IPOPTLIBDIR) -lipopt @IPADDLIBS@
-LIBS = -L$(IPOPTLIBDIR) -lipopt -lpthread  -llapack -lblas -lm  -ldl  -L/usr/lib/gcc/i486-linux-gnu/4.3.2 -L/usr/lib/gcc/i486-linux-gnu/4.3.2/../../../../lib -L/lib/../lib -L/usr/lib/../lib -L/usr/lib/gcc/i486-linux-gnu/4.3.2/../../.. -lm -lgcc_s
+LIBS = -L$(IPOPTLIBDIR) -lipopt -llapack -lpthread
 
 # Necessary Include dirs (we use the CYGPATH_W variables to allow
 # compilation with Windows compilers)
