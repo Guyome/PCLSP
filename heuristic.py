@@ -6,6 +6,7 @@
 
 import numpy as np
 from lupb import thomas
+from llpb import ipopt
 from tools import import_data
 from plots import show_data
 
@@ -38,6 +39,7 @@ class clspHeuristic:
 
     def main(self):
         upper,delta = thomas(self)
+        ipopt(self)
         print upper,delta
         return 0
 
