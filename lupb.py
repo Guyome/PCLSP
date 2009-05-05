@@ -11,6 +11,7 @@ import numpy as np
 def thomas(clsp):
     
     hor = clsp.time_hor
+    obj = clsp.nb_obj
     alpha  = clsp.alpha
     beta = clsp.beta
     setup = clsp.cost_setup
@@ -18,7 +19,7 @@ def thomas(clsp):
     stor = clsp.cost_stor
     lamdba = clsp.coef
     cons = clsp.cons_prod
-    optiprice = np.zeros(hor, float)
+    optiprice = np.zeros((obj,hor), float)
     thomas_code = """
         //problem variable
         float c[hor];
@@ -26,60 +27,65 @@ def thomas(clsp):
         float price[hor][hor];
         float demand[hor][hor];
         // algorithm variable
-        int k,j,t0,t = 0,ind[hor];
+        int k,i,t0,t = 0,ind[hor];
         float sumstor,sum,summin;
         
         //initiate price,demand since there is no storage
-        price[t][t] = (alpha(t) + (prod(t) + cons(t)*lamdba(t))* beta(t)) / (2 * beta(t) );
-        demand[t][t] = alpha(t) - beta(t) * price[t][t];
-        c[t]= demand[t][t]*( price[t][t] - prod(t))-setup(t);
-        f[t+1] = -c[t];
-        ind[0] = 0;
-        for ( t = 1; t < hor;  t++)
+        for(int j = 0; j < obj;  j++)
         {
-            for (t0 = 0; t0 <= t; t0++)
+            price[t][t] = (alpha(j,t) + (prod(j,t) + cons(j,t)*lamdba(j,t))* beta(j,t)) / (2 * beta(j,t) );
+            demand[t][t] = alpha(j,t) - beta(j,t) * price[t][t];
+            c[t]= demand[t][t]*( price[t][t] - prod(j,t))-setup(j,t);
+            f[t+1] = -c[t];
+            ind[0] = 0;
+            for ( t = 1; t < hor;  t++)
             {
-                // sum of first storage
-                sumstor = 0;
-                for (j = t0; j < t; j++)
+            std::cout << beta(t) <<"|";
+                for (t0 = 0; t0 <= t; t0++)
                 {
-                    sumstor += stor(j);
-                }
-                // compute price and demand
-                price[t][t0] = (alpha(t) + (prod(t0) + sumstor + cons(t0)*lamdba(t0))* beta(t)) / (2 * beta(t) );
-                demand[t][t0] = alpha(t) - beta(t) * price[t][t0];
-            }
-            for (t0 = 0; t0 <= t; t0++)
-            {
-                sum = 0;
-                for (j = t0; j <= t; j++)
-                {
+                    // sum of first storage
                     sumstor = 0;
-                    for (k = t0; k < j; k++)
+                    for (i = t0; i < t; i++)
                     {
-                        sumstor += stor(j);
+                        sumstor += stor(j,i);
                     }
-                    sum += (prod(t0) + sumstor - price[j][t0])*demand[j][t0];
+                    // compute price and demand
+                    price[t][t0] = (alpha(j,t) + 
+                        (prod(j,t0) + sumstor + cons(j,t0)*lamdba(j,t0))* beta(j,t)) / (2 * beta(j,t));
+                    demand[t][t0] = alpha(j,t) - beta(j,t) * price[t][t0];
                 }
-                c[t0] = sum + setup(t0);
-            }
-            // compute minimal criterium
-            summin = 0;
-            for (t0 = 0; t0 <= t; t0++)
-            {
-                if (c[t0] + f[t0] < summin)
+                for (t0 = 0; t0 <= t; t0++)
                 {
-                    summin = c[t0] + f[t0];
-                    ind[t] = t0;
+                    sum = 0;
+                    for (i = t0; i <= t; i++)
+                    {
+                        sumstor = 0;
+                        for (k = t0; k < i; k++)
+                        {
+                            sumstor += stor(j,i);
+                        }
+                        sum += (prod(j,t0) + sumstor - price[j][t0])*demand[j][t0];
+                    }
+                    c[t0] = sum + setup(j,t0);
                 }
+                // compute minimal criterium
+                summin = 0;
+                for (t0 = 0; t0 <= t; t0++)
+                {
+                    if (c[t0] + f[t0] < summin)
+                    {
+                        summin = c[t0] + f[t0];
+                        ind[t] = t0;
+                    }
+                }
+                f[t+1] = summin;
             }
-            f[t+1] = summin;
-        }
-        for( t = 0; t < hor;  t++)
-        {
-            optiprice(t)=price[t][ind[t]];
+            for( t = 0; t < hor;  t++)
+            {
+                optiprice(j,t)=price[t][ind[t]];
+            }
         }
     """
-    wv.inline( thomas_code , ['hor', 'alpha', 'beta', 'setup', 'prod', 'stor', 'optiprice','cons','lamdba'], \
-    type_converters=converters.blitz)
+    wv.inline( thomas_code , ['hor', 'obj','alpha', 'beta', 'setup', 'prod', 'stor', 'optiprice','cons','lamdba'], \
+    type_converters=converters.blitz,headers=['<iostream>'])
     return optiprice, np.array(optiprice > 0, int)
