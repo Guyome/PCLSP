@@ -40,7 +40,6 @@ def thomas(clsp):
             ind[0] = 0;
             for ( t = 1; t < hor;  t++)
             {
-            std::cout << beta(t) <<"|";
                 for (t0 = 0; t0 <= t; t0++)
                 {
                     // sum of first storage
@@ -87,5 +86,5 @@ def thomas(clsp):
         }
     """
     wv.inline( thomas_code , ['hor', 'obj','alpha', 'beta', 'setup', 'prod', 'stor', 'optiprice','cons','lamdba'], \
-    type_converters=converters.blitz,headers=['<iostream>'])
+    type_converters=converters.blitz)
     return optiprice, np.array(optiprice > 0, int)
