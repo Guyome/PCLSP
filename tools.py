@@ -22,11 +22,12 @@ def import_data(address):
             data.append(int(row[1]))
         else :
             item.append(row[1:])
-            if ((count-2)%data[1] == 1):
+            if (((count-2)%data[1] == 1)|(data[1] == 1)):
                 data.append(np.array(item, dtype=float))
                 item = list()
         count += 1
-    data.append(np.array(item, dtype=float)) # manage the last tabular
+    if (data[1] != 1):
+        data.append(np.array(item, dtype=float)) # manage the last tabular
     return data
 
 if __name__ == '__main__':
