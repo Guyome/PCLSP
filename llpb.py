@@ -7,6 +7,7 @@
 import scipy.weave as wv
 from scipy.weave import converters
 import numpy as np
+from os.path import join, split
 
 def ipopt(clsp):
 
@@ -18,7 +19,10 @@ def ipopt(clsp):
     stor = clsp.cost_stor
     consprod = clsp.cons_prod
     constraint = clsp.constraint
-    ret = np.zeros(hor,float)
+    results = np.zeros(((obj+1)*hor+1), float)
+    print results
+    extra_code = open(join(split(__file__)[0],'LLBP/main.cpp')).read()
+    verbose_level = 5
     code="""
         float r[hor];
         float** al = new float*[hor];//coeff demand function
@@ -26,6 +30,7 @@ def ipopt(clsp):
         float** v = new float*[hor];//production cost
         float** h = new float*[hor];//storage cost
         float** a = new float*[hor];//consumption
+        int status;
         for (int i = 0; i < hor; i ++)
         {
             r[i]=(float)constraint(0,i);
@@ -34,6 +39,7 @@ def ipopt(clsp):
             v[i] = new float[obj];
             h[i] = new float[obj];
             a[i] = new float[obj];
+            printf("r[%d]= %f\\n",i,r[i]);
             for(int j = 0; j < obj; j ++)
             {
                 al[i][j] = alpha(j,i);
@@ -41,40 +47,24 @@ def ipopt(clsp):
                 v[i][j] = prod(j,i);
                 h[i][j] = stor(j,i);
                 a[i][j] = consprod(j,i);
+                printf("al[%d][%d]= %f\\n",i,j,al[i][j]);
+                printf("b[%d][%d]= %f\\n",i,j,b[i][j]);
+                printf("v[%d][%d]= %f\\n",i,j,v[i][j]);
+                printf("h[%d][%d]= %f\\n",i,j,h[i][j]);
+                printf("a[%d][%d]= %f\\n",i,j,a[i][j]);
             }
         }
         // Create an instance of your nlp...
-        SmartPtr<TNLP> mynlp = new FreeSolver(al,b,v,h,a,r,hor,obj);
-        
-        // Create an instance of the IpoptApplication
-        SmartPtr<IpoptApplication> app = new IpoptApplication();
-        
-        // Initialize the IpoptApplication and process the options
-        ApplicationReturnStatus status;
-        
-        status = app->Initialize();
-        if (status != Solve_Succeeded) 
-        {
-            printf("\\n\\n*** Error during initialization!\\n");
-        }
-
-        status = app->OptimizeTNLP(mynlp);
-
-        if (status == Solve_Succeeded) 
-        {
-            // Retrieve some statistics about the solve
-            Index iter_count = app->Statistics()->IterationCount();
-            printf("\\n\\n*** The problem solved in %d iterations!\\n", iter_count);
-            Number final_obj = app->Statistics()->FinalObjective();
-            printf("\\n\\n*** The final value of the objective function is %e.\\n", -final_obj);
-        }
+        status = ipopt(al,b,v,h,a,r,results,hor,obj,verbose_level);
+        printf("END\\n");
     """
-    wv.inline(code,["alpha","beta","prod","stor","consprod","constraint","hor","obj"],\
+    wv.inline(code,["alpha","beta","prod","stor","consprod","constraint","hor","obj","results",'verbose_level'],\
     include_dirs=["LLBP/","/usr/include/coin/"],\
-    library_dirs=["/usr/lib/"],\
-    libraries=['ipopt','lapack','pthread','dl'],\
-    sources =['LLBP/FreeSolver.cpp'],\
-    headers=['"FreeSolver.hpp"','"IpSolveStatistics.hpp"','"IpIpoptApplication.hpp"'],\
-    type_converters=converters.blitz,verbose=3,compiler='gcc')
+    support_code=extra_code,\
+    libraries=['ipopt','lapack','pthread'],\
+    sources =['LLBP/LbIpopt.cpp'],\
+    type_converters=converters.blitz)
+    return results[0],results[1:]
 
-
+def heuristic(clsp):
+    return [0],[100]
