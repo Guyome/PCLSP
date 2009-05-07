@@ -7,10 +7,11 @@
 #include <blitz/array.h>
 
 using namespace Ipopt;
+using namespace blitz;
 
-int ipopt(float** alpha,float** beta, float** prod,
-            float** stor, float** consumption,
-            float* constraint, blitz::Array<double,1> results,
+int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
+            Array<double,2> stor, Array<double,2> consumption,
+            Array<double,1> constraint, Array<double,1> results,
             int period, int product,int verbose)
 {
 
@@ -24,13 +25,13 @@ int ipopt(float** alpha,float** beta, float** prod,
     ApplicationReturnStatus status;
 
     // Run IpOpt
-    //app->Options()->SetIntegerValue("print_level",verbose);
-    //app->Options()->SetStringValue("derivative_test","None");
+    app->Options()->SetIntegerValue("print_level",5*verbose);
+    app->Options()->SetStringValue("derivative_test","None");
     status = app->Initialize();
     if (status != Solve_Succeeded) 
     {
         printf("\n\n*** Error during initialization!\n");
-        return (int) 1;
+        return status;
     }
     
     status = app->OptimizeTNLP(mynlp);
@@ -40,16 +41,46 @@ int ipopt(float** alpha,float** beta, float** prod,
         // Retrieve some statistics about the solve
         Number final_obj = app->Statistics()->FinalObjective();
         results(0) = -final_obj;
-        printf("OK 0\n");
         for (int i = 0; i < (product+1)*period; i++)
         {
-            results(i+1)=(double)problem->get_coef()[i];
+            results(i+1)=problem->get_coef()(i);
         }
-        printf("OK: END");
-        if (verbose >0)
+        if (verbose > 0)
         {
             printf("\n\n*** The final value of the objective function is %e.\n", -final_obj);
         }
     }
-    return (int) 0;
+    return status;
+}
+
+int main ()
+{
+    int hor = 3;
+    int obj = 1;
+    int status;
+    Array<double,2> alpha(hor,obj);
+    Array<double,2> beta(hor,obj);
+    Array<double,2> prod(hor,obj);
+    Array<double,2> stor(hor,obj);
+    Array<double,2> consumption(hor,obj);
+    Array<double,1> constraint(hor);
+    Array<double,1> results((obj+1)*hor+1);
+
+    alpha = 70, 50, 80;
+    beta = 1, 3, 2;
+    prod = 10, 10, 10;
+    stor = 1, 1, 1;
+    consumption = 2, 2, 2;
+    results = 0, 0,0;
+    constraint = 11, 15, 11;
+
+    
+    status = ipopt(alpha, beta, prod,
+            stor, consumption, constraint,
+            results, hor, obj, 1);
+    for (int i = 0; i < hor; i += 1)
+    {
+            printf("%f\n",results(0,i));
+    }
+    return 0;
 }
