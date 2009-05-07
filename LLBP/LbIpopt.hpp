@@ -94,12 +94,12 @@ class LbIpopt : public TNLP
     //@}
     int period;//number of time period
     int product;//number of product
-    double** alpha;//coeff of demand function
-    double** beta;//idem
-    double** prod;//production cost
-    double** stor;//holding cost
-    double** consumption;//consumption of ressouce 
-    double* constraint;//prodcution constraint
+    Array<double,2>* alpha;//coeff of demand function
+    Array<double,2>* beta;//idem
+    Array<double,2>* prod;//production cost
+    Array<double,2>* stor;//holding cost
+    Array<double,2>* consumption;//consumption of ressouce 
+    Array<double,1>* constraint;//prodcution constraint
     Array<double,1>* coef;//Khun Thucker coeficient
 };
 
