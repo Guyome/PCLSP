@@ -5,16 +5,17 @@
 #define __LbIpopt_HPP__
 
 #include "IpTNLP.hpp"
+#include <blitz/array.h>
 
 using namespace Ipopt;
-
+using namespace blitz;
 
 class LbIpopt : public TNLP
 {
     public:
     /** default constructor */
-    LbIpopt(float** alpha,float** beta, float** prod,float** stor,
-                    float** consumption, float* constraint, int period, int product);
+    LbIpopt(Array<double,2> alpha, Array<double,2> beta, Array<double,2> prod, Array<double,2> stor,
+                    Array<double,2> consumption, Array<double,1> constraint, int period, int product);
 
     /** default destructor */
     virtual ~LbIpopt();
@@ -72,7 +73,7 @@ class LbIpopt : public TNLP
                                 Number obj_value,const IpoptData* ip_data,
                                 IpoptCalculatedQuantities* ip_cq);
     
-    virtual float* get_coef();
+    virtual Array<double,1> get_coef();
     //@}
 
     private:
@@ -93,13 +94,13 @@ class LbIpopt : public TNLP
     //@}
     int period;//number of time period
     int product;//number of product
-    float** alpha;//coeff of demand function
-    float** beta;//idem
-    float** prod;//production cost
-    float** stor;//holding cost
-    float** consumption;//consumption of ressouce 
-    float* constraint;//prodcution constraint
-    float* coef;//Khun Thucker coeficient
+    double** alpha;//coeff of demand function
+    double** beta;//idem
+    double** prod;//production cost
+    double** stor;//holding cost
+    double** consumption;//consumption of ressouce 
+    double* constraint;//prodcution constraint
+    Array<double,1>* coef;//Khun Thucker coeficient
 };
 
 
