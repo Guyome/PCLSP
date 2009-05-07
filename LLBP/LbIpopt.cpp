@@ -2,43 +2,41 @@
 //       version 0.1
 
 #include "LbIpopt.hpp"
+#include <blitz/array.h>
 
 using namespace Ipopt;
+using namespace blitz;
 
 // constructor
-LbIpopt::LbIpopt(float** _alpha,float** _beta, float** _prod,
-            float** _stor, float** _consumption, float* _constraint, int _period, int _product)
+LbIpopt::LbIpopt(Array<double,2> _alpha, Array<double,2> _beta, Array<double,2> _prod,
+    Array<double,2> _stor, Array<double,2> _consumption,
+    Array<double,1> _constraint, int _period, int _product)
 {
     period = _period;
     product = _product;
-    alpha = new float*[period];
-    beta = new float*[period];
-    prod = new float*[period];
-    stor = new float*[period];
-    consumption = new float*[period];
-    constraint = new float[period];
-    coef = new float[(product+1)*period];
+    alpha = new double*[period];
+    beta = new double*[period];
+    prod = new double*[period];
+    stor = new double*[period];
+    consumption = new double*[period];
+    constraint = new double[period];
+    coef = new Array<double,1>((product+1)*period) ;
     for (int i = 0; i < period; i++)
     {
-        alpha[i] = new float[product];
-        beta[i] = new float[product];
-        prod[i] = new float[product];
-        stor[i] = new float[product];
-        consumption[i] = new float[product];
+        alpha[i] = new double[product];
+        beta[i] = new double[product];
+        prod[i] = new double[product];
+        stor[i] = new double[product];
+        consumption[i] = new double[product];
         for (int j = 0; j < product; j ++)
         {
-            alpha[i][j]=_alpha[i][j];
-            beta[i][j]=_beta[i][j];
-            prod[i][j]=_prod[i][j];
-            stor[i][j]=_stor[i][j];
-            consumption[i][j]=_consumption[i][j];
-            printf("al[%d][%d]= %f\n",i,j,alpha[i][j]);
-            printf("b[%d][%d]= %f\n",i,j,beta[i][j]);
-            printf("v[%d][%d]= %f\n",i,j,prod[i][j]);
-            printf("h[%d][%d]= %f\n",i,j,stor[i][j]);
-            printf("a[%d][%d]= %f\n",i,j,consumption[i][j]);
+            alpha[i][j]=_alpha(i,j);
+            beta[i][j]=_beta(i,j);
+            prod[i][j]=_prod(i,j);
+            stor[i][j]=_stor(i,j);
+            consumption[i][j]=_consumption(i,j);
         }
-        constraint[i]=_constraint[i];
+        constraint[i]=_constraint(i);
     }
 }
 
@@ -76,6 +74,7 @@ bool LbIpopt::get_bounds_info(Index n, Number* x_l, Number* x_u,
     {
         for ( Index j = 0; j < product; j ++)
         {
+            printf("alpha[%d][%d]=%f\n",i,j,alpha[i][j]);
             x_u[idx] = alpha[i][j]/beta[i][j];
             idx++;
         }
@@ -114,8 +113,8 @@ bool LbIpopt::get_starting_point(Index n, bool init_x, Number* x,
     assert(init_z == false);
     assert(init_lambda == false);
     //find the minimal of consumption per time period
-    float max = 0.0;
     Index idx = 0;
+    double max = 0.;
     for ( Index i = 0; i < period; i++)
     {
         for (Index j = 0; j < product; j ++)
@@ -125,9 +124,9 @@ bool LbIpopt::get_starting_point(Index n, bool init_x, Number* x,
                 max = consumption[i][j];
             }
         }
-        // initialize to the given starting point
         for (Index j = 0; j < product; j++)
         {
+            // initialize to the given starting point
             x[idx] = constraint[i]/(max*product); //production minimize the constraint
             //price to stay in feasible region
             x[idx+period*product]=(alpha[i][j]-x[idx])/beta[i][j];
@@ -141,24 +140,24 @@ bool LbIpopt::get_starting_point(Index n, bool init_x, Number* x,
     return true;
 }
 
-// returns the value of the objective function
-bool LbIpopt::eval_f(Index n, const Number* x, bool new_x, Number& obj_value) 
+// returns the value of the productective function
+bool LbIpopt::eval_f(Index n, const Number* x, bool new_x, Number& product_value) 
 {
     assert(n == 3*period*product);
-    obj_value = 0.0;
+    product_value = 0.0;
     Index idx = 0;
     for(Index i=0; i< period; i++) 
     {
         for (Index j = 0; j < product; j++)
         {
-            obj_value -= (alpha[i][j]-beta[i][j]*x[period*product+idx])*x[period*product+idx]-prod[i][j]*x[idx]-stor[i][j]*x[2*period*product+idx];
+            product_value -= (alpha[i][j]-beta[i][j]*x[period*product+idx])*x[period*product+idx]-prod[i][j]*x[idx]-stor[i][j]*x[2*period*product+idx];
             idx++;
         }
     }
     return true;
 }
 
-// return the gradient of the objective function grad_{x} f(x)
+// return the gradient of the productective function grad_{x} f(x)
 bool LbIpopt::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f) 
 {
     assert(n == 3*period*product);
@@ -278,7 +277,7 @@ bool LbIpopt::eval_jac_g(Index n, const Number* x, bool new_x,
 
 //return the structure or values of the hessian
 bool LbIpopt::eval_h(Index n, const Number* x, bool new_x,
-                   Number obj_factor, Index m, const Number* lambda,
+                   Number product_factor, Index m, const Number* lambda,
                    bool new_lambda, Index nele_hess, Index* iRow,
                    Index* jCol, Number* values)
 {
@@ -300,7 +299,7 @@ bool LbIpopt::eval_h(Index n, const Number* x, bool new_x,
         {
             for (Index j = 0; j < product; j++)
             {
-                values[idx] = 2*beta[i][j]*obj_factor;
+                values[idx] = 2*beta[i][j]*product_factor;
                 idx++;
             }
         }
@@ -312,16 +311,16 @@ bool LbIpopt::eval_h(Index n, const Number* x, bool new_x,
 void LbIpopt::finalize_solution(SolverReturn status,
                               Index n, const Number* x, const Number* z_L, const Number* z_U,
                               Index m, const Number* g, const Number* lambda,
-                              Number obj_value,
+                              Number product_value,
               const IpoptData* ip_data,
               IpoptCalculatedQuantities* ip_cq) 
 {
-    for (Index i = 0; i < m; i ++)
+    for (int i = 0; i < m; i ++)
     {
-        coef[i] = lambda[i];
+        (*coef)(i) = lambda[i];
     }
 }
 
-float* LbIpopt::get_coef(){
-    return coef;
+Array<double,1> LbIpopt::get_coef(){
+    return *coef;
 }
