@@ -14,30 +14,13 @@ LbIpopt::LbIpopt(Array<double,2> _alpha, Array<double,2> _beta, Array<double,2> 
 {
     period = _period;
     product = _product;
-    alpha = new double*[period];
-    beta = new double*[period];
-    prod = new double*[period];
-    stor = new double*[period];
-    consumption = new double*[period];
-    constraint = new double[period];
+    alpha = new Array<double,2>(_alpha);
+    beta = new Array<double,2>(_beta);
+    prod = new Array<double,2>(_prod);
+    stor = new Array<double,2>(_stor);
+    consumption = new Array<double,2>(_consumption) ;
+    constraint = new Array<double,1>(_constraint);
     coef = new Array<double,1>((product+1)*period) ;
-    for (int i = 0; i < period; i++)
-    {
-        alpha[i] = new double[product];
-        beta[i] = new double[product];
-        prod[i] = new double[product];
-        stor[i] = new double[product];
-        consumption[i] = new double[product];
-        for (int j = 0; j < product; j ++)
-        {
-            alpha[i][j]=_alpha(i,j);
-            beta[i][j]=_beta(i,j);
-            prod[i][j]=_prod(i,j);
-            stor[i][j]=_stor(i,j);
-            consumption[i][j]=_consumption(i,j);
-        }
-        constraint[i]=_constraint(i);
-    }
 }
 
 //destructor
@@ -74,8 +57,7 @@ bool LbIpopt::get_bounds_info(Index n, Number* x_l, Number* x_u,
     {
         for ( Index j = 0; j < product; j ++)
         {
-            printf("alpha[%d][%d]=%f\n",i,j,alpha[i][j]);
-            x_u[idx] = alpha[i][j]/beta[i][j];
+            x_u[idx] = (*alpha)(j,i)/(*beta)(j,i);
             idx++;
         }
     }
@@ -85,7 +67,7 @@ bool LbIpopt::get_bounds_info(Index n, Number* x_l, Number* x_u,
     {
         for (Index j = 0; j < product; j ++)
         {
-            g_l[idx] = g_u[idx] = alpha[i][j]; 
+            g_l[idx] = g_u[idx] = (*alpha)(j,i); 
             idx++;
         }
     }
@@ -93,7 +75,7 @@ bool LbIpopt::get_bounds_info(Index n, Number* x_l, Number* x_u,
     for (Index i=0; i<period; i++) 
     {
         g_l[idx] = 0.0;
-        g_u[idx] = constraint[i];
+        g_u[idx] = (*constraint)(i);
         idx++;
     }
 	assert(m == idx );
@@ -114,26 +96,17 @@ bool LbIpopt::get_starting_point(Index n, bool init_x, Number* x,
     assert(init_lambda == false);
     //find the minimal of consumption per time period
     Index idx = 0;
-    double max = 0.;
     for ( Index i = 0; i < period; i++)
     {
-        for (Index j = 0; j < product; j ++)
-        {
-            if(max < consumption[i][j])
-            {
-                max = consumption[i][j];
-            }
-        }
         for (Index j = 0; j < product; j++)
         {
             // initialize to the given starting point
-            x[idx] = constraint[i]/(max*product); //production minimize the constraint
+            x[idx] = (*constraint)(i)/(max((*consumption)(Range::all(),i))*product); //production minimize the constraint
             //price to stay in feasible region
-            x[idx+period*product]=(alpha[i][j]-x[idx])/beta[i][j];
+            x[idx+period*product]=((*alpha)(j,i)-x[idx])/(*beta)(j,i);
             x[idx+2*period*product]=0.;//no storage
             idx++;
         }
-        
     }
     
     assert(idx == n);
@@ -150,7 +123,7 @@ bool LbIpopt::eval_f(Index n, const Number* x, bool new_x, Number& product_value
     {
         for (Index j = 0; j < product; j++)
         {
-            product_value -= (alpha[i][j]-beta[i][j]*x[period*product+idx])*x[period*product+idx]-prod[i][j]*x[idx]-stor[i][j]*x[2*period*product+idx];
+            product_value -= ((*alpha)(j,i)-(*beta)(j,i)*x[period*product+idx])*x[period*product+idx]-(*prod)(j,i)*x[idx]-(*stor)(j,i)*x[2*period*product+idx];
             idx++;
         }
     }
@@ -166,9 +139,9 @@ bool LbIpopt::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
     {
         for (Index j = 0; j < product; j += 1)
         {
-        grad_f[idx] = prod[i][j];
-        grad_f[idx+period*product] = 2*beta[i][j]*x[period*product+idx]-alpha[i][j];
-        grad_f[idx+2*period*product] = stor[i][j];
+        grad_f[idx] = (*prod)(j,i);
+        grad_f[idx+period*product] = 2*(*beta)(j,i)*x[period*product+idx]-(*alpha)(j,i);
+        grad_f[idx+2*period*product] = (*stor)(j,i);
         idx++;
         }
     }
@@ -188,11 +161,11 @@ bool LbIpopt::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
         {
             if (i > 0)
             {
-                 g[idx] = x[idx]  + x[2*period*product+idx-1] - x[2*period*product+idx] + beta[i][j]*x[period*product+idx];
+                 g[idx] = x[idx]  + x[2*period*product+idx-1] - x[2*period*product+idx] + (*beta)(j,i)*x[period*product+idx];
             }
             else
             {
-                g[idx] = x[idx] - x[2*period*product+idx] + beta[i][j]*x[period*product+idx];
+                g[idx] = x[idx] - x[2*period*product+idx] + (*beta)(j,i)*x[period*product+idx];
             }
             idx++;
         }
@@ -203,7 +176,7 @@ bool LbIpopt::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
         g[idx] = 0;
         for (Index j = 0; j < product; j ++)
         {
-            g[idx] += consumption[i][j]*x[j+i*product];
+            g[idx] += (*consumption)(j,i)*x[j+i*product];
         }
         idx++;
     }
@@ -259,10 +232,10 @@ bool LbIpopt::eval_jac_g(Index n, const Number* x, bool new_x,
             {
                 //element on 3 diagonals
                 values[idx]=1.;
-                values[idx+period*product]=beta[i][j];
+                values[idx+period*product]=(*beta)(j,i);
                 values[idx+2*period*product]=-1.;
                 // element due to the inequality constraint
-                values[idx+3*period*product]=consumption[i][j];
+                values[idx+3*period*product]=(*consumption)(j,i);
                 // elements on the sub-diagonale (i_{t-1})
                 if (i<period-1)
                 {
@@ -299,7 +272,7 @@ bool LbIpopt::eval_h(Index n, const Number* x, bool new_x,
         {
             for (Index j = 0; j < product; j++)
             {
-                values[idx] = 2*beta[i][j]*product_factor;
+                values[idx] = 2*(*beta)(j,i)*product_factor;
                 idx++;
             }
         }
