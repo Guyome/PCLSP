@@ -16,8 +16,8 @@ int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
 {
 
     // Create an instance of your nlp...
-    LbIpopt* problem = new LbIpopt(alpha,beta,prod,
-        stor,consumption,constraint,period,product);
+    LbIpopt* problem = new LbIpopt(alpha,beta,prod,stor,
+        consumption,constraint,period,product);
     SmartPtr<TNLP> mynlp = problem;
     // Create an instance of the IpoptApplication
     SmartPtr<IpoptApplication> app = new IpoptApplication();
@@ -51,36 +51,4 @@ int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
         }
     }
     return status;
-}
-
-int main ()
-{
-    int hor = 3;
-    int obj = 1;
-    int status;
-    Array<double,2> alpha(hor,obj);
-    Array<double,2> beta(hor,obj);
-    Array<double,2> prod(hor,obj);
-    Array<double,2> stor(hor,obj);
-    Array<double,2> consumption(hor,obj);
-    Array<double,1> constraint(hor);
-    Array<double,1> results((obj+1)*hor+1);
-
-    alpha = 70, 50, 80;
-    beta = 1, 3, 2;
-    prod = 10, 10, 10;
-    stor = 1, 1, 1;
-    consumption = 2, 2, 2;
-    results = 0, 0,0;
-    constraint = 11, 15, 11;
-
-    
-    status = ipopt(alpha, beta, prod,
-            stor, consumption, constraint,
-            results, hor, obj, 1);
-    for (int i = 0; i < hor; i += 1)
-    {
-            printf("%f\n",results(0,i));
-    }
-    return 0;
 }
