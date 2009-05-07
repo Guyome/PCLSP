@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
                 ind[t] = t0;
             }
         }
+        f[t+1] = summin;
     }
     printf("t \t F[t] \t Ind\n");
     printf("--------------------------------\n");
@@ -73,4 +74,5 @@ int main(int argc, char *argv[])
     printf("--------------------------------\n");
     return 0;
 }
+
 
