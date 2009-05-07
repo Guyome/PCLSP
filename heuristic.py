@@ -5,8 +5,7 @@
 #       version 0.1
 
 import numpy as np
-from lupb import thomas
-from llpb import ipopt, heuristic
+from solvers import thomas,ipopt
 from tools import import_data
 from plots import show_data
 
@@ -41,6 +40,9 @@ class PCLSP:
         if self.verbose:
             show_data(self)
 
+    def get_data(self):
+        return self.alpha, self.beta, self.cost_prod, self.cost_stor, self.cons_prod,
+        self.cost_setup, self.coef, self.time_hor, self.nb_obj, self.verbose
         
     def _critere(self):
         """
@@ -73,10 +75,10 @@ class PCLSP:
         count = 0
         while ( (diff > self.eps) & (count < self.cycle) ):
             previous_lambda = self.coef
-            self.price, self.setup = thomas(self)
+            self.price, self.setup = thomas(self.get_data ())
             upper = self._critere()
             #try:
-            lower, self.coef = ipopt(self)
+            lower, self.coef = ipopt(self.get_data ())
             lower = self._critere_ipopt(lower)
             #except:
             #    print "Ipopt solver unaviable: run heuristic..."
