@@ -25,7 +25,7 @@ int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
     ApplicationReturnStatus status;
 
     // Run IpOpt
-    app->Options()->SetIntegerValue("print_level",5*verbose);
+    app->Options()->SetIntegerValue("print_level", verbose);
     app->Options()->SetStringValue("derivative_test","None");
     status = app->Initialize();
     if (status != Solve_Succeeded) 
@@ -45,7 +45,7 @@ int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
         {
             results(i+1)=problem->get_coef()(i);
         }
-        if (verbose > 0)
+        if (verbose > 1)
         {
             printf("\n\n*** The final value of the objective function is %e.\n", -final_obj);
         }
