@@ -1,8 +1,0 @@
-heuristic.py
-pclsp_solver.py
-tools.py
-plots.py
-LLBP/main.cpp
-LLBP/LbIpopt.cpp
-LLBP/LbIpopt.hpp
-LUBP/lubp.cpp
