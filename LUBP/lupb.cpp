@@ -17,7 +17,7 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
     Array<int,1> ind(hor);
     float sumc; //summin;
     int t;
-    if (verbose >0)
+    if (verbose >1)
     {
         printf("j\tt\tF(t)\t\tInd\n");
         printf("-------------------------------------\n");
@@ -57,7 +57,7 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
             results(j,t)=price(t,ind(t));
         }
         
-        if (verbose >0)
+        if (verbose >1)
         {
             for (t = 0; t < hor; t++)
             {
@@ -65,7 +65,7 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
             }
         }
     }
-    if (verbose>0)
+    if (verbose>1)
     {
         printf("-------------------------------------\n");
     }
