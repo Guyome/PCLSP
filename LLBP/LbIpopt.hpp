@@ -1,23 +1,24 @@
 //       Copyright 2009 Guillaume Lanquepin <guillaume@himolde.no>
 //       version 0.1
 
-#ifndef __FreeSolver_HPP__
-#define __FreeSolver_HPP__
+#ifndef __LbIpopt_HPP__
+#define __LbIpopt_HPP__
 
 #include "IpTNLP.hpp"
+#include <blitz/array.h>
 
 using namespace Ipopt;
+using namespace blitz;
 
-
-class FreeSolver : public TNLP
+class LbIpopt : public TNLP
 {
     public:
     /** default constructor */
-    FreeSolver(float** alpha,float** beta, float** prod,float** stor,
-                    float** consumption, float* constraint, int period, int product);
+    LbIpopt(Array<double,2> alpha, Array<double,2> beta, Array<double,2> prod, Array<double,2> stor,
+                    Array<double,2> consumption, Array<double,1> constraint, int period, int product);
 
     /** default destructor */
-    virtual ~FreeSolver();
+    virtual ~LbIpopt();
 
     /**@name Overloaded from TNLP */
     //@{
@@ -71,6 +72,8 @@ class FreeSolver : public TNLP
                                 Index m, const Number* g, const Number* lambda,
                                 Number obj_value,const IpoptData* ip_data,
                                 IpoptCalculatedQuantities* ip_cq);
+    
+    virtual Array<double,1> get_coef();
     //@}
 
     private:
@@ -85,18 +88,19 @@ class FreeSolver : public TNLP
     *
     */
     //@{
-    //  FreeSolver();
-    FreeSolver(const FreeSolver&);
-    FreeSolver& operator=(const FreeSolver&);
+    //  LbIpopt();
+    LbIpopt(const LbIpopt&);
+    LbIpopt& operator=(const LbIpopt&);
     //@}
     int period;//number of time period
     int product;//number of product
-    float** alpha;//coeff of demand function
-    float** beta;//idem
-    float** prod;//production cost
-    float** stor;//holding cost
-    float** consumption;//consumption of ressouce 
-    float* constraint;//prodcution constraint
+    Array<double,2>* alpha;//coeff of demand function
+    Array<double,2>* beta;//idem
+    Array<double,2>* prod;//production cost
+    Array<double,2>* stor;//holding cost
+    Array<double,2>* consumption;//consumption of ressouce 
+    Array<double,1>* constraint;//prodcution constraint
+    Array<double,1>* coef;//Khun Thucker coeficient
 };
 
 
