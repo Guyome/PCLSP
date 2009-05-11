@@ -34,10 +34,10 @@ def thomas(alpha, beta, cost_prod, cost_stor, cons_prod,
         'cost_prod', 'cost_stor', 'opti_price','cons_prod','coef','verbose'], 
         support_code=extra_code,
         type_converters=converters.blitz)
-    return opti_price, np.array(opti_price > 0, int)
+    return opti_price, np.array(opti_price > 0,float)
     
 def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
-    cost_setup, constraint, time_hor, nb_obj, verbose):
+    cost_setup, setup, constraint, time_hor, nb_obj, verbose):
     """
     This function solve quadratic problem as define
     in 'the profit mazimizing capacited lot-size problem'.
@@ -56,11 +56,11 @@ def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
         print "\tCompute lower bound (IpOpt)..."
     code="""
     int status = ipopt(alpha,beta,cost_prod,
-        cost_stor,cons_prod,cons,
+        cost_stor,cons_prod,setup,cons,
         results,time_hor,nb_obj,verbose);
     """
     wv.inline(code,['time_hor', 'nb_obj','alpha', 'beta', 'cost_setup',
-        'cost_prod', 'cost_stor', 'results', 'cons_prod', 'cons', 'verbose'],
+        'cost_prod', 'cost_stor', 'setup', 'results', 'cons_prod', 'cons', 'verbose'],
         include_dirs=["LLBP","/usr/include/coin/"],
         support_code=extra_code,
         libraries=['ipopt','lapack','pthread'],
@@ -77,6 +77,7 @@ if __name__ == '__main__':
     cost_stor = np.array([2.,2.,2.]).reshape(nb_obj,time_hor)
     cons_prod = np.array([0.3,0.3,0.3]).reshape(nb_obj,time_hor)
     cost_setup = np.array([5.,5.,5.]).reshape(nb_obj,time_hor)
+    setup = np.array([1.,0.,1.]).reshape(nb_obj,time_hor)
     constraint = np.array([40.,40.,40.])
     coef = np.zeros((nb_obj+1)*time_hor, float)
     verbose = 1
@@ -86,5 +87,5 @@ if __name__ == '__main__':
     print "OK\n"
     print "IPOPT..."
     print ipopt(alpha, beta, cost_prod, cost_stor,cons_prod,
-    cost_setup, constraint, time_hor, nb_obj, verbose)
+    cost_setup, setup, constraint, time_hor, nb_obj, verbose)
     print "OK"

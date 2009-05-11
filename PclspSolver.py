@@ -23,11 +23,11 @@ def main():
         help="Write output informations (not only errors).",
         default=1)
     parser.add_option("-p", "--smooth-parameter",
-         action="store", type="int", dest="theta",
+         action="store", type="float", dest="theta",
         help="Coefficient for smoothing lagrangian coefficients.",
         default=0.5)
     parser.add_option("-e", "--epsilon",
-         action="store", type="int", dest="eps",
+         action="store", type="float", dest="eps",
         help="Minimal difference between upper and lower bounds",
         default=10)
     parser.add_option("-c", "--cycle",

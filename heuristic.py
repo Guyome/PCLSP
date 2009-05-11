@@ -160,8 +160,8 @@ class HEURISTIC:
             # compute lower bound
             lower, self.coef = ipopt(self.alpha, self.beta,
                 self.cost_prod, self.cost_stor, self.cons_prod,
-                self.cost_setup, self.constraint, self.time_hor,
-                self.nb_obj, self.verbose)
+                self.cost_setup, self.setup, self.constraint,
+                self.time_hor, self.nb_obj, self.verbose)
             lower = self._critere_ipopt(lower)
             # update lagrangian coefficients
             self.coef = self.smooth_param*previous_lambda\
@@ -180,8 +180,4 @@ class HEURISTIC:
             print "Last critere value: "+str(lower)
             print "Duration of computation:"+str(end-start)+"(s)"
         return self._critere ()
-
-if __name__ == '__main__':
-    TEST = PCLSP()
-    TEST.solve()
 

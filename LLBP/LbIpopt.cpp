@@ -9,7 +9,7 @@ using namespace blitz;
 
 // constructor
 LbIpopt::LbIpopt(Array<double,2> _alpha, Array<double,2> _beta, Array<double,2> _prod,
-    Array<double,2> _stor, Array<double,2> _consumption,
+    Array<double,2> _stor, Array<double,2> _consumption, Array<double,2> _setup,
     Array<double,1> _constraint, int _period, int _product)
 {
     period = _period;
@@ -18,7 +18,8 @@ LbIpopt::LbIpopt(Array<double,2> _alpha, Array<double,2> _beta, Array<double,2> 
     beta = new Array<double,2>(_beta);
     prod = new Array<double,2>(_prod);
     stor = new Array<double,2>(_stor);
-    consumption = new Array<double,2>(_consumption) ;
+    consumption = new Array<double,2>(_consumption) ; 
+    setup =  new Array<double, 2>(_setup);
     constraint = new Array<double,1>(_constraint);
     coef = new Array<double,1>((product+1)*period) ;
 }
@@ -46,7 +47,15 @@ bool LbIpopt::get_bounds_info(Index n, Number* x_l, Number* x_u,
     // If desired, we could assert to make sure they are what we think they are.
     assert(n == 3*period*product);
     assert(m == (product+1)*period);
-    for (Index i=0; i<n; i++) 
+    for (Index i = 0; i < period; i ++)
+    {
+        for (Index j = 0; j < product; j ++)
+        {
+            x_l[j+i*product] = 0.0; // the variables are positives
+            x_u[j+i*product] = 2e19*(*setup)(j,i);  // null in function of setup structure
+        }
+    }
+    for (Index i=period*product; i<n; i++) 
     {
         x_l[i] = 0.0; // the variables are positives
         x_u[i] = 2e19;  // have no upper bounds

@@ -10,14 +10,14 @@ using namespace Ipopt;
 using namespace blitz;
 
 int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
-            Array<double,2> stor, Array<double,2> consumption,
+            Array<double,2> stor, Array<double,2> consumption, Array<double,2> setup,
             Array<double,1> constraint, Array<double,1> results,
             int period, int product,int verbose)
 {
 
     // Create an instance of your nlp...
     LbIpopt* problem = new LbIpopt(alpha,beta,prod,stor,
-        consumption,constraint,period,product);
+        consumption,setup,constraint,period,product);
     SmartPtr<TNLP> mynlp = problem;
     // Create an instance of the IpoptApplication
     SmartPtr<IpoptApplication> app = new IpoptApplication();

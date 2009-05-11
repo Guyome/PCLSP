@@ -15,7 +15,8 @@ class LbIpopt : public TNLP
     public:
     /** default constructor */
     LbIpopt(Array<double,2> alpha, Array<double,2> beta, Array<double,2> prod, Array<double,2> stor,
-                    Array<double,2> consumption, Array<double,1> constraint, int period, int product);
+                    Array<double,2> consumption, Array<double,2> setup, Array<double,1> constraint,
+                    int period, int product);
 
     /** default destructor */
     virtual ~LbIpopt();
@@ -99,6 +100,7 @@ class LbIpopt : public TNLP
     Array<double,2>* prod;//production cost
     Array<double,2>* stor;//holding cost
     Array<double,2>* consumption;//consumption of ressouce 
+    Array<double,2>* setup;//setup structure
     Array<double,1>* constraint;//prodcution constraint
     Array<double,1>* coef;//Khun Thucker coeficient
 };
