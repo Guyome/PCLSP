@@ -6,6 +6,7 @@
 #
 # This file containts all tools needed by heuristic program
 import csv
+from sys import exit
 import numpy as np
 
 def import_data(address):
@@ -32,25 +33,30 @@ def import_data(address):
     try:
         inputcsv = csv.reader(open(address, "r"), delimiter=";", lineterminator="\n")
     except IOError:
-        print "I/O error with the specified file"
+        print "File not exists or is unreadable, please check it."
+        exit(1)
 
     data = list() # all data
     item = list() # each tabular
     count = 0
     subcount = 0
-    for row in inputcsv:
-        if count < 2 : # read Time period and number of product
-            data.append(int(row[1]))
-        else :
-            item.append(row[1:])
-            subcount +=1 
-            if subcount == data[1]:
-                data.append(np.array(item, dtype=float))
-                item = list()
-                subcount = 0
-        count += 1
-    if (data[1] > 1):
-        data.append(np.array(item, dtype=float)) # manage the last tabular
+    try:
+        for row in inputcsv:
+            if count < 2 : # read Time period and number of product
+                data.append(int(row[1]))
+            else :
+                item.append(row[1:])
+                subcount +=1 
+                if subcount == data[1]:
+                    data.append(np.array(item, dtype=float))
+                    item = list()
+                    subcount = 0
+            count += 1
+        if (data[1] > 1):
+            data.append(np.array(item, dtype=float)) # manage the last tabular
+    except:
+        print "File is not well formated, please correct it."
+        exit(1)
     return data
 
 if __name__ == '__main__':
