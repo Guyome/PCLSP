@@ -40,6 +40,15 @@ def show_data(clsp):
     print "Production constraint:"
     print_tab(clsp.constraint)
     
+def show_varaibles(clsp):
+    print"### Varaiable"
+    print "Price:"
+    print_tab(clsp.price)
+    print "Storage:"
+    print_tab(clsp.storage)
+    print "Production:"
+    print_tab(clsp.production)
+    
 def graphic(lower, upper,cycle):
     ind = np.arange(cycle)
     plt.plot(ind, lower, 'r--',label='Lower bound')

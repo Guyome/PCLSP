@@ -8,7 +8,7 @@ import numpy as np
 import time
 from solvers import thomas, ipopt
 from tools import import_data
-from plots import show_data, graphic
+from plots import *
 from math import fabs
 
 class HEURISTIC:
@@ -179,5 +179,6 @@ class HEURISTIC:
             print "Difference between upper and lower bound: "+str(diff)
             print "Last critere value: "+str(lower)
             print "Duration of computation:"+str(end-start)+"(s)"
+            show_varaibles(self)
         return self._critere ()
 
