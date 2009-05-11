@@ -52,6 +52,8 @@ def show_varaibles(clsp):
     print_tab(clsp.storage)
     print "Production:"
     print_tab(clsp.production)
+    print "Setup structure:"
+    print_tab(clsp.setup>0)
     
 def graphic(lower, upper,cycle):
     ind = np.arange(cycle)
