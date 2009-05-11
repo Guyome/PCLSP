@@ -40,10 +40,18 @@ int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
     {
         // Retrieve some statistics about the solve
         Number final_obj = app->Statistics()->FinalObjective();
-        results(0) = -final_obj;
+        int idx = 0;
+        results(idx) = -final_obj;
+        idx++;
         for (int i = 0; i < (product+1)*period; i++)
         {
-            results(i+1)=problem->get_coef()(i);
+            results(idx)=problem->get_coef()(i);
+            idx++;
+        }
+        for (int i = 0; i < 3*period*product; i++)
+        {
+            results(idx)=problem->get_final_value()(i);
+            idx++;
         }
         if (verbose > 1)
         {

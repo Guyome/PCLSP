@@ -137,6 +137,32 @@ class HEURISTIC:
     def show_convergence(self):
         graphic(self.opt_lower, self.opt_upper, self.cycle)
         
+    def _update_variables(self):
+        """
+        
+        """
+        for j in xrange(self.nb_obj):
+            previous_storage = 0.
+            self.production[j, 0] = min( self.alpha[j, 0]\
+            -self.beta[j, 0]*self.price[j, 0], self.constraint[j, 0])
+            self.storage[j, 0] = 0.
+            for t in xrange(1, self.time_hor):
+                demand = self.alpha[j, t]-self.beta[j, t]*self.price[j, t]
+                self.production[j, t] =  min(demand, self.constraint[j, t])
+                self.storage[j, t] = max(self.production[j, t] + previous_storage\
+                - demand, 0.)
+            self.storage[j, -1] = 0.
+
+    def _vector_to_tabular(self,vector):
+        vector.shape = (self.nb_obj, self.time_hor)
+        return vector
+        
+        """count = 0
+        for j in xrange(self.nb_obj):
+            for t in xrange(slef.time_hor):
+                tabular[j, t] = vector[count]
+                count ++"""
+        
     def solve(self):
         """
         Function who solve the PCLSP problem
@@ -156,12 +182,17 @@ class HEURISTIC:
                 self.beta, self.cost_prod, self.cost_stor,
                 self.cons_prod, self.cost_setup, self.coef,
                 self.time_hor, self.nb_obj, self.verbose)
+            self._update_variables()
             upper = self._critere()
             # compute lower bound
-            lower, self.coef = ipopt(self.alpha, self.beta,
+            lower, self.coef, production, price, storage\
+            = ipopt(self.alpha, self.beta,
                 self.cost_prod, self.cost_stor, self.cons_prod,
                 self.cost_setup, self.setup, self.constraint,
                 self.time_hor, self.nb_obj, self.verbose)
+            self.production = self._vector_to_tabular (production)
+            self.storage = self._vector_to_tabular (storage)
+            self.price = self._vector_to_tabular (price)
             lower = self._critere_ipopt(lower)
             # update lagrangian coefficients
             self.coef = self.smooth_param*previous_lambda\

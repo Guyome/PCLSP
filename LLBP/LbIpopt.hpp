@@ -75,6 +75,7 @@ class LbIpopt : public TNLP
                                 IpoptCalculatedQuantities* ip_cq);
     
     virtual Array<double,1> get_coef();
+    virtual Array<double,1> get_final_value();
     //@}
 
     private:
@@ -103,6 +104,7 @@ class LbIpopt : public TNLP
     Array<double,2>* setup;//setup structure
     Array<double,1>* constraint;//prodcution constraint
     Array<double,1>* coef;//Khun Thucker coeficient
+    Array<double,1>* final;//Khun Thucker coeficient
 };
 
 

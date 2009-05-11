@@ -5,5 +5,5 @@
 "Setup cost";3;3;3
 "Storage cost";2;2;2
 "Production cost";20;20;20
-"Consuption";0.1;0.3;0.6
+"Consuption";1;3;1
 "Constraint";35;1;42

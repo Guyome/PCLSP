@@ -22,6 +22,7 @@ LbIpopt::LbIpopt(Array<double,2> _alpha, Array<double,2> _beta, Array<double,2> 
     setup =  new Array<double, 2>(_setup);
     constraint = new Array<double,1>(_constraint);
     coef = new Array<double,1>((product+1)*period) ;
+    final = new Array<double,1>(3*period*product) ;
 }
 
 //destructor
@@ -301,8 +302,17 @@ void LbIpopt::finalize_solution(SolverReturn status,
     {
         (*coef)(i) = lambda[i];
     }
+    for (int i = 0; i < n; i ++)
+    {
+        (*final)(i) = x[i];
+    }
 }
 
 Array<double,1> LbIpopt::get_coef(){
     return *coef;
 }
+
+Array<double,1> LbIpopt::get_final_value(){
+    return *final;
+}
+
