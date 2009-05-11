@@ -41,9 +41,13 @@ def show_data(clsp):
     print_tab(clsp.constraint)
     
 def show_varaibles(clsp):
+    demand = np.zeros((clsp.nb_obj,clsp.time_hor))
+    for j in xrange(clsp.nb_obj):
+            for t in xrange(clsp.time_hor):
+                demand[j, t] = clsp.alpha[j, t]-clsp.beta[j, t]*clsp.price[j, t]
     print"### Varaiable"
-    print "Price:"
-    print_tab(clsp.price)
+    print "Demand:"
+    print_tab(demand)
     print "Storage:"
     print_tab(clsp.storage)
     print "Production:"
