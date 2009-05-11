@@ -201,7 +201,7 @@ class HEURISTIC:
             self.opt_upper.append(upper)
             self.opt_lower.append(lower)
             # update 
-            diff = fabs(upper-lower)
+            diff = upper-lower
             count += 1
         end = time.clock()
         if self.verbose > 0:
