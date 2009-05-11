@@ -55,8 +55,8 @@ def show_varaibles(clsp):
     print "Setup structure:"
     print_tab(clsp.setup>0)
     
-def graphic(lower, upper,cycle):
-    ind = np.arange(cycle)
+def graphic(lower, upper):
+    ind = np.arange(len(lower))
     plt.plot(ind, lower, 'r--',label='Lower bound')
     plt.plot(ind, upper, 'b--',label='Upper bound')
     plt.xlabel('Number of iteration')

@@ -135,7 +135,7 @@ class HEURISTIC:
         return objective
         
     def show_convergence(self):
-        graphic(self.opt_lower, self.opt_upper, self.cycle)
+        graphic(self.opt_lower, self.opt_upper)
         
     def _update_variables(self):
         """
