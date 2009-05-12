@@ -5,7 +5,7 @@ using namespace blitz;
 
 int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
             Array<double,2> stor, Array<double,2> cons, Array<double,2> setup,
-             Array<double,2> results, Array<double,1> lambda,
+             Array<double,2> results, Array<double,1> lambda, Array<long,2> ind,
             int hor, int obj, int verbose)
 {
     //problem variable
@@ -14,7 +14,6 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
     Array<double,2> price(hor,hor);
     Array<double,2> demand(hor,hor);
     // algorithm variable
-    Array<int,1> ind(hor);
     float sumc;
     int t;
     if (verbose >2)
@@ -32,8 +31,8 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
         f(t) = 0;
         f(t+1) = -c(t);
         // result for the first period
-        ind(0) = 0;
-        results(j,t)=price(t,ind(t));
+        ind(j,0) = 0;
+        results(j,t)=price(t,(int)ind(j,t));
         for (t = 1; t < hor;  t++)
         {
             for (int t0 = 0; t0 <= t; t0++)
@@ -54,15 +53,15 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
             // find minimal criterium
             f(t+1) = min(c(Range(0,t)) + f(Range(0,t)));
             // result for period t
-            ind(t) = min(minIndex(c(Range(0,t))+ f(Range(0,t))));
-            results(j,t)=price(t,ind(t));
+            ind(j,t) = min(minIndex(c(Range(0,t))+ f(Range(0,t))));
+            results(j,t)=price(t,(int)ind(j,t));
         }
         
         if (verbose >2)
         {
             for (t = 0; t < hor; t++)
             {
-                printf("%d\t%d\t%f\t%d\n",j+1,t+1,-f(t+1),ind(t)+1);
+                printf("%d\t%d\t%f\t%d\n",j+1,t+1,-f(t+1),(int)ind(j,t)+1);
             }
         }
     }

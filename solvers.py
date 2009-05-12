@@ -20,20 +20,22 @@ def thomas(alpha, beta, cost_prod, cost_stor, cons_prod,
     cost_setup,coef, time_hor, nb_obj, verbose)
     """
     opti_price = np.zeros((nb_obj,time_hor), float)
+    ind = np.zeros((nb_obj,time_hor),int)
     extra_code = open(join(split(__file__)[0],'LUBP','lupb.cpp')).read()
     if verbose > 1:
         print "\nCompute upper bound (Thomas)..."
     thomas_code = """
     int status = thomas(alpha, beta, cost_prod,
         cost_stor, cons_prod, cost_setup,
-        opti_price, coef,
+        opti_price, coef, ind,
         time_hor, nb_obj, verbose);
     """
     wv.inline( thomas_code ,
-        ['time_hor', 'nb_obj','alpha', 'beta', 'cost_setup',
+        ['time_hor', 'nb_obj','alpha', 'beta', 'cost_setup','ind',
         'cost_prod', 'cost_stor', 'opti_price','cons_prod','coef','verbose'], 
         support_code=extra_code,
         type_converters=converters.blitz)
+    print ind
     return opti_price, np.array(opti_price > 0,float)
     
 def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
