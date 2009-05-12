@@ -15,9 +15,9 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
     Array<double,2> demand(hor,hor);
     // algorithm variable
     Array<int,1> ind(hor);
-    float sumc; //summin;
+    float sumc;
     int t;
-    if (verbose >1)
+    if (verbose >2)
     {
         printf("j\tt\tF(t)\t\tInd\n");
         printf("-------------------------------------\n");
@@ -28,7 +28,8 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
         t = 0;
         price(t,t) = (alpha(j,t) + (prod(j,t) + cons(j,t)*lambda(j,t))* beta(j,t)) / (2 * beta(j,t) );
         demand(t,t) = alpha(j,t) - beta(j,t) * price(t,t);
-        c(t)= demand(t,t)*( price(t,t) - prod(j,t))-setup(j,t);
+        c(t) = demand(t,t)*( price(t,t) - prod(j,t))-setup(j,t);
+        f(t) = 0;
         f(t+1) = -c(t);
         // result for the first period
         ind(0) = 0;
@@ -46,18 +47,18 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
                 sumc = 0;
                 for (int i = t0; i <= t; i++)
                 {
-                    sumc += (prod(j,t0) + sum(stor(j,Range(t0,i-1))) - price(i,t0))*demand(i,t0);
+                    sumc += (prod(j,t0) + cons(j,t0)*lambda(j,t0) + sum(stor(j,Range(t0,i-1))) - price(i,t0))*demand(i,t0);
                 }
                 c(t0) = sumc + setup(j,t0);
             }
             // find minimal criterium
-            f(t+1) = min(c(Range(0,t))+ f(Range(0,t)));
+            f(t+1) = min(c(Range(0,t)) + f(Range(0,t)));
             // result for period t
             ind(t) = min(minIndex(c(Range(0,t))+ f(Range(0,t))));
             results(j,t)=price(t,ind(t));
         }
         
-        if (verbose >1)
+        if (verbose >2)
         {
             for (t = 0; t < hor; t++)
             {
