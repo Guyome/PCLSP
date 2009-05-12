@@ -44,7 +44,11 @@ def main():
     (options, args) = parser.parse_args() 
 
     problem = he.HEURISTIC(options.theta,options.eps, options.cycle, options.verbose)
-    problem.import_data(options.file)
+    try:
+        problem.import_data(options.file)
+    except:
+        print "Mismatch in data size, please check."
+        sys.exit(0)
     problem.solve()
     if options.graphic:
         problem.show_convergence()    
