@@ -10,14 +10,21 @@ def print_tab(tabular):
     """
     This function plot an tabular
     """
-    row,col = tabular.shape
-    tab = ""
-    for i in xrange(row):
-        tab += "\n"
+    try:
+        row,col = tabular.shape
+        tab = ""
+        for i in xrange(row):
+            tab += "\n"
+            line = ""
+            for j in xrange(col):
+                line += "--------"
+                tab += str(tabular[i][j])+"\t"
+    except:
+        tab = "\n"
         line = ""
-        for j in xrange(col):
+        for i in xrange(len(tabular)):
             line += "--------"
-            tab += str(tabular[i][j])+"\t"
+            tab += str(tabular[i])+"\t"
     print line,
     print tab
     print line
