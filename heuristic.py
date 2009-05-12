@@ -144,11 +144,11 @@ class HEURISTIC:
         for j in xrange(self.nb_obj):
             previous_storage = 0.
             self.production[j, 0] = min( self.alpha[j, 0]\
-            -self.beta[j, 0]*self.price[j, 0], self.constraint[j, 0])
+            -self.beta[j, 0]*self.price[j, 0], self.constraint[0, 0])
             self.storage[j, 0] = 0.
             for t in xrange(1, self.time_hor):
                 demand = self.alpha[j, t]-self.beta[j, t]*self.price[j, t]
-                self.production[j, t] =  min(demand, self.constraint[j, t])
+                self.production[j, t] =  min(demand, self.constraint[0, t])
                 self.storage[j, t] = max(self.production[j, t] + previous_storage\
                 - demand, 0.)
             self.storage[j, -1] = 0.
