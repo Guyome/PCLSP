@@ -22,7 +22,7 @@ def thomas(alpha, beta, cost_prod, cost_stor, cons_prod,
     opti_price = np.zeros((nb_obj,time_hor), float)
     extra_code = open(join(split(__file__)[0],'LUBP','lupb.cpp')).read()
     if verbose > 1:
-        print "\tCompute upper bound (Thomas)..."
+        print "\nCompute upper bound (Thomas)..."
     thomas_code = """
     int status = thomas(alpha, beta, cost_prod,
         cost_stor, cons_prod, cost_setup,
@@ -53,7 +53,7 @@ def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
     else :
         cons = constraint
     if verbose > 1:
-        print "\tCompute lower bound (IpOpt)..."
+        print "\nCompute lower bound (IpOpt)..."
     code="""
     int status = ipopt(alpha,beta,cost_prod,
         cost_stor,cons_prod,setup,cons,
@@ -71,24 +71,4 @@ def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
     results[(2*nb_obj+1)*time_hor+1:(3*nb_obj+1)*time_hor+1],\
     results[(3*nb_obj+1)*time_hor+1:]
 
-if __name__ == '__main__':
-    time_hor = 3
-    nb_obj =1
-    alpha = np.array([100.,100.,100.]).reshape(nb_obj,time_hor)
-    beta = np.array([1.,1.,1.]).reshape(nb_obj,time_hor)
-    cost_prod = np.array([20.,20.,20.]).reshape(nb_obj,time_hor)
-    cost_stor = np.array([2.,2.,2.]).reshape(nb_obj,time_hor)
-    cons_prod = np.array([0.3,0.3,0.3]).reshape(nb_obj,time_hor)
-    cost_setup = np.array([5.,5.,5.]).reshape(nb_obj,time_hor)
-    setup = np.array([1.,0.,1.]).reshape(nb_obj,time_hor)
-    constraint = np.array([40.,40.,40.])
-    coef = np.zeros((nb_obj+1)*time_hor, float)
-    verbose = 1
-    print "THOMAS..."
-    print thomas(alpha, beta, cost_prod, cost_stor,cons_prod,
-    cost_setup,coef, time_hor, nb_obj, verbose)
-    print "OK\n"
-    print "IPOPT..."
-    print ipopt(alpha, beta, cost_prod, cost_stor,cons_prod,
-    cost_setup, setup, constraint, time_hor, nb_obj, verbose)
-    print "OK"
+
