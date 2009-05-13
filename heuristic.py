@@ -175,12 +175,12 @@ class HEURISTIC:
                 print "\nIterartion: "+str(count+1)
             previous_lambda = self.coef
             # compute upper bound
-            self.price, self.setup = thomas(self.alpha,
+            self.price, ind = thomas(self.alpha,
                 self.beta, self.cost_prod, self.cost_stor,
                 self.cons_prod, self.cost_setup, self.coef,
                 self.time_hor, self.nb_obj, self.verbose)
             self._update_variables()
-            upper = self._critere()
+            upper = self._critere(ind)
             # compute lower bound
             lower, self.coef, production, price, storage\
             = ipopt(self.alpha, self.beta,
