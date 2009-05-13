@@ -36,7 +36,7 @@ def thomas(alpha, beta, cost_prod, cost_stor, cons_prod,
         support_code=extra_code,
         type_converters=converters.blitz)
     print ind
-    return opti_price, np.array(opti_price > 0,float)
+    return opti_price, ind
     
 def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
     cost_setup, setup, constraint, time_hor, nb_obj, verbose):
