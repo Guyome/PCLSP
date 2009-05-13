@@ -137,25 +137,18 @@ class HEURISTIC:
     def show_convergence(self):
         graphic(self.opt_lower, self.opt_upper)
         
-    def _update_variables(self):
+    def _update_variables(self,ind):
         """
         
         """
-        if len(constraint.shape) > 1 :
-            cons = constraint[0]
-        else :
-            cons = constraint
         for j in xrange(self.nb_obj):
-            previous_storage = 0.
-            self.production[j, 0] = min( self.alpha[j, 0]\
-            -self.beta[j, 0]*self.price[j, 0], cons[0])
-            self.storage[j, 0] = 0.
-            for t in xrange(1, self.time_hor):
-                demand = self.alpha[j, t]-self.beta[j, t]*self.price[j, t]
-                self.production[j, t] =  min(demand, cons[t])
-                self.storage[j, t] = max(self.production[j, t] + previous_storage\
-                - demand, 0.)
-            self.storage[j, -1] = 0.
+            demand = self.alpha[j,:] -self.beta[j,:]*self.price[j,:]
+            self.setup[j,:] = np.array(ind[j,:] == np.arange(self.time_hor),int)
+            for t in xrange(self.time_hor):
+                self.production[j, t] =  sum(demand[ind[j,:]==t])
+            self.storage[j,:] = self.production[j,:] - demand
+        self.storage[self.storage<0] = 0
+        self.storage[:, -1] = 0.
 
     def _vector_to_tabular(self,vector):
         vector.shape = (self.nb_obj, self.time_hor)
@@ -216,39 +209,5 @@ class HEURISTIC:
             print "Duration of computation:"+str(end-start)+"(s)"
             show_varaibles(self)
         return self._critere ()
-        
-if __name__ == '__main__':    
-    TEST = HEURISTIC()
-    time_hor = 3
-    nb_obj =2
-    alpha = np.array([100.,100.,100.,100.,100.,100.]).reshape(nb_obj,time_hor)
-    beta = np.array([1.,1.,1.,1.,1.,1.]).reshape(nb_obj,time_hor)
-    cost_prod = np.array([20.,20.,20.,20.,20.,20.]).reshape(nb_obj,time_hor)
-    cost_stor = np.array([2.,2.,2.,2.,2.,2.]).reshape(nb_obj,time_hor)
-    cons_prod = np.array([1.,5.,1.,2.,1.,3.]).reshape(nb_obj,time_hor)
-    cost_setup = np.array([5.,5.,5.,5.,5.,5.]).reshape(nb_obj,time_hor)
-    #setup = np.array([1.,1.,1.,1.,1.,1.]).reshape(nb_obj,time_hor)
-    constraint = np.array([40.,12.,30.])
-    coef = np.ones(time_hor, float)
-    print coef
-    verbose = 3
-    TEST.set_data(alpha, beta, cost_prod, cost_stor,
-        cons_prod, constraint, cost_setup, time_hor, nb_obj)
-    print "THOMAS..."
-    TEST.price, TEST.setup = thomas(alpha, beta, cost_prod, cost_stor,cons_prod,
-    cost_setup,coef, time_hor, nb_obj, verbose)
-    print "price"
-    print TEST.price
-    print "setup"
-    print TEST.setup
-    print "demand"
-    print 100-TEST.price
-    print "Storage"
-    print TEST.storage
-    print "OK\n"
-    """print "IPOPT..."
-    print ipopt(alpha, beta, cost_prod, cost_stor,cons_prod,
-    cost_setup, setup, constraint, time_hor, nb_obj, verbose)
-    print "OK"
-    """
+
 
