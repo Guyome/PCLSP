@@ -61,7 +61,7 @@ class HEURISTIC:
         self.cons_prod, \
         self.constraint = import_data(data_file)
         #problem variables
-        self.coef = np.zeros(((self.nb_obj+1)*self.time_hor), float) # lagrangian multiplier
+        self.coef = np.zeros(self.time_hor, float) # lagrangian multiplier
         self.production = np.zeros((self.nb_obj, self.time_hor), float)
         self.price = np.zeros((self.nb_obj, self.time_hor), float)
         self.setup = np.zeros((self.nb_obj, self.time_hor), float)
@@ -87,7 +87,7 @@ class HEURISTIC:
         self.cons_prod = cons_prod
         self.constraint = constraint
         #problem variables
-        self.coef = np.zeros(((self.nb_obj+1)*self.time_hor), float) # lagrangian multiplier
+        self.coef = np.zeros(self.time_hor, float) # lagrangian multiplier
         self.production = np.zeros((self.nb_obj, self.time_hor), float)
         self.price = np.zeros((self.nb_obj, self.time_hor), float)
         self.setup = np.zeros((self.nb_obj, self.time_hor), float)
@@ -122,18 +122,6 @@ class HEURISTIC:
                 - self.cost_prod[j, t]*self.production[j, t]
         return objective
         
-    def _critere_ipopt(self, initial):
-        """
-        Private function who compute critere for lower bound
-        
-        _critere_ipopt(self,initial)
-        """
-        objective = initial
-        for j in xrange(self.nb_obj):
-            for t in xrange(self.time_hor):
-                objective -= self.cost_setup[j, t]*self.setup[j, t]
-        return objective
-        
     def show_convergence(self):
         graphic(self.opt_lower, self.opt_upper)
         
@@ -154,12 +142,6 @@ class HEURISTIC:
         vector.shape = (self.nb_obj, self.time_hor)
         return vector
         
-        """count = 0
-        for j in xrange(self.nb_obj):
-            for t in xrange(slef.time_hor):
-                tabular[j, t] = vector[count]
-                count ++"""
-        
     def solve(self):
         """
         Function who solve the PCLSP problem
@@ -179,18 +161,17 @@ class HEURISTIC:
                 self.beta, self.cost_prod, self.cost_stor,
                 self.cons_prod, self.cost_setup, self.coef,
                 self.time_hor, self.nb_obj, self.verbose)
-            self._update_variables()
-            upper = self._critere(ind)
+            self._update_variables(ind)
+            upper = self._critere()
             # compute lower bound
             lower, self.coef, production, price, storage\
             = ipopt(self.alpha, self.beta,
                 self.cost_prod, self.cost_stor, self.cons_prod,
-                self.cost_setup, self.setup, self.constraint,
-                self.time_hor, self.nb_obj, self.verbose)
+                self.setup, self.constraint, self.time_hor,
+                self.nb_obj, self.verbose)
             self.production = self._vector_to_tabular (production)
             self.storage = self._vector_to_tabular (storage)
             self.price = self._vector_to_tabular (price)
-            lower = self._critere_ipopt(lower)
             # update lagrangian coefficients
             self.coef = self.smooth_param*previous_lambda\
                 - (1-self.smooth_param)*self.coef
