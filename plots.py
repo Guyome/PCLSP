@@ -52,7 +52,7 @@ def show_varaibles(clsp):
     for j in xrange(clsp.nb_obj):
             for t in xrange(clsp.time_hor):
                 demand[j, t] = clsp.alpha[j, t]-clsp.beta[j, t]*clsp.price[j, t]
-    print"### Varaiable"
+    print"### Variable"
     print "Demand:"
     print_tab(demand)
     print "Storage:"
