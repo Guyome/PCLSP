@@ -35,7 +35,6 @@ def thomas(alpha, beta, cost_prod, cost_stor, cons_prod,
         'cost_prod', 'cost_stor', 'opti_price','cons_prod','coef','verbose'], 
         support_code=extra_code,
         type_converters=converters.blitz)
-    print ind
     return opti_price, ind
     
 def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
@@ -67,8 +66,8 @@ def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
         support_code=extra_code,
         libraries=['ipopt','lapack','pthread'],
         sources =[join(split(__file__)[0],'LLBP','LbIpopt.cpp')],
-        type_converters=converters.blitz,
-        force = 1)
+        type_converters=converters.blitz)
+        #force = 1)
     return results[0],results[1:time_hor+1],\
     results[time_hor+1:(nb_obj+1)*time_hor+1],\
     results[(nb_obj+1)*time_hor+1:(2*nb_obj+1)*time_hor+1],\
