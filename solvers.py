@@ -39,7 +39,7 @@ def thomas(alpha, beta, cost_prod, cost_stor, cons_prod,
     return opti_price, ind
     
 def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
-    cost_setup, setup, constraint, time_hor, nb_obj, verbose):
+    setup, constraint, time_hor, nb_obj, verbose):
     """
     This function solve quadratic problem as define
     in 'the profit mazimizing capacited lot-size problem'.
@@ -49,7 +49,7 @@ def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
     cost_setup, constraint, time_hor, nb_obj, verbose)
     """
     extra_code = open(join(split(__file__)[0],'LLBP','main.cpp')).read()
-    results = np.zeros((4*nb_obj+1)*time_hor+1, float)
+    results = np.zeros((3*nb_obj+1)*time_hor+1, float)
     if len(constraint.shape) > 1 :
         cons = constraint[0]
     else :
@@ -61,16 +61,17 @@ def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
         cost_stor,cons_prod,setup,cons,
         results,time_hor,nb_obj,verbose);
     """
-    wv.inline(code,['time_hor', 'nb_obj','alpha', 'beta', 'cost_setup',
-        'cost_prod', 'cost_stor', 'setup', 'results', 'cons_prod', 'cons', 'verbose'],
+    wv.inline(code,['time_hor', 'nb_obj','alpha', 'beta', 'cost_prod',
+        'cost_stor', 'setup', 'results', 'cons_prod', 'cons', 'verbose'],
         include_dirs=["LLBP","/usr/include/coin/"],
         support_code=extra_code,
         libraries=['ipopt','lapack','pthread'],
         sources =[join(split(__file__)[0],'LLBP','LbIpopt.cpp')],
-        type_converters=converters.blitz)
-    return results[0],results[1:(nb_obj+1)*time_hor+1],\
+        type_converters=converters.blitz,
+        force = 1)
+    return results[0],results[1:time_hor+1],\
+    results[time_hor+1:(nb_obj+1)*time_hor+1],\
     results[(nb_obj+1)*time_hor+1:(2*nb_obj+1)*time_hor+1],\
-    results[(2*nb_obj+1)*time_hor+1:(3*nb_obj+1)*time_hor+1],\
-    results[(3*nb_obj+1)*time_hor+1:]
+    results[(2*nb_obj+1)*time_hor+1:]
 
 
