@@ -49,19 +49,15 @@ def ipopt(alpha, beta, cost_prod, cost_stor, cons_prod,
     """
     extra_code = open(join(split(__file__)[0],'LLBP','main.cpp')).read()
     results = np.zeros((3*nb_obj+1)*time_hor+1, float)
-    if len(constraint.shape) > 1 :
-        cons = constraint[0]
-    else :
-        cons = constraint
     if verbose > 1:
         print "\nCompute lower bound (IpOpt)..."
     code="""
     int status = ipopt(alpha,beta,cost_prod,
-        cost_stor,cons_prod,setup,cons,
+        cost_stor,cons_prod,setup,constraint,
         results,time_hor,nb_obj,verbose);
     """
     wv.inline(code,['time_hor', 'nb_obj','alpha', 'beta', 'cost_prod',
-        'cost_stor', 'setup', 'results', 'cons_prod', 'cons', 'verbose'],
+        'cost_stor', 'setup', 'results', 'cons_prod', 'constraint', 'verbose'],
         include_dirs=["LLBP","/usr/include/coin/"],
         support_code=extra_code,
         libraries=['ipopt','lapack','pthread'],
