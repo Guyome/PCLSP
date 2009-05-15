@@ -60,6 +60,8 @@ class HEURISTIC:
         self.cost_prod, \
         self.cons_prod, \
         self.constraint = import_data(data_file)
+        if len(self.constraint.shape) > 1 :
+            self.constraint  = self.constraint[0]
         #problem variables
         self.coef = np.zeros(self.time_hor, float) # lagrangian multiplier
         self.production = np.zeros((self.nb_obj, self.time_hor), float)
@@ -86,6 +88,8 @@ class HEURISTIC:
         self.cost_prod = cost_prod
         self.cons_prod = cons_prod
         self.constraint = constraint
+        if len(self.constraint.shape) > 1 :
+            self.constraint  = self.constraint[0]
         #problem variables
         self.coef = np.zeros(self.time_hor, float) # lagrangian multiplier
         self.production = np.zeros((self.nb_obj, self.time_hor), float)
@@ -113,13 +117,14 @@ class HEURISTIC:
         _critere(self)
         """
         objective = 0
-        for j in xrange(self.nb_obj):
-            for t in xrange(self.time_hor):
-                objective += (self.alpha[j, t]-self.beta[j, t]*self.price[j, t])\
-                *self.price[j, t]\
-                - self.cost_setup[j, t]*self.setup[j, t]\
-                - self.cost_stor[j, t]*self.storage[j, t]\
-                - self.cost_prod[j, t]*self.production[j, t]
+        for t in xrange(self.time_hor):
+                lagrangian = self.constraint[t] - sum(self.cons_prod[:, t]*self.production[:, t])
+                objective += sum((self.alpha[:, t] - self.beta[:, t]*self.price[:, t])\
+                * self.price[:, t]\
+                - self.cost_setup[:, t]*self.setup[:, t]\
+                - self.cost_stor[:, t]*self.storage[:, t]\
+                - self.cost_prod[:, t]*self.production[:, t])\
+                + self.coef[t]*lagrangian
         return objective
         
     def show_convergence(self):
@@ -152,6 +157,7 @@ class HEURISTIC:
         diff = self.eps+ 1.
         count = 0
         start = time.clock()
+        
         while ( (diff > self.eps) & (count < self.cycle) ):
             if self.verbose > 2:
                 print "\nIterartion: "+str(count+1)
