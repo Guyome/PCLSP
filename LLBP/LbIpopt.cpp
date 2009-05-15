@@ -53,26 +53,16 @@ bool LbIpopt::get_bounds_info(Index n, Number* x_l, Number* x_u,
         for (Index j = 0; j < product; j ++)
         {
             x_l[j+i*product] = 0.0; // the variables are positives
-            x_u[j+i*product] = 2e19*(*setup)(j,i);  // null in function of setup structure
+            x_u[j+i*product] = sum((*alpha)(j,Range::all()))*(*setup)(j,i);  // null in function of setup structure
+            x_l[j+i*product+product*period] = 0.0;
+            x_u[j+i*product+product*period] = (*alpha)(j,i)/(*beta)(j,i);
+            x_l[j+i*product+2*product*period] = 0.0;
+            x_u[j+i*product+2*product*period] = 2e19;
         }
     }
-    for (Index i=period*product; i<n; i++) 
-    {
-        x_l[i] = 0.0; // the variables are positives
-        x_u[i] = 2e19;  // have no upper bounds
-    }
-    // price upper bound
-    Index idx=period*product;
-    for (Index i = 0; i < period; i ++)
-    {
-        for ( Index j = 0; j < product; j ++)
-        {
-            x_u[idx] = (*alpha)(j,i)/(*beta)(j,i);
-            idx++;
-        }
-    }
-    idx=0;
-    // product*period equality contraint
+
+    Index idx = 0;
+    // product*period equality constraint
     for (Index i=0; i<period; i++) 
     {
         for (Index j = 0; j < product; j ++)
@@ -118,7 +108,6 @@ bool LbIpopt::get_starting_point(Index n, bool init_x, Number* x,
             idx++;
         }
     }
-    
     assert(idx == n);
     return true;
 }
@@ -147,7 +136,7 @@ bool LbIpopt::eval_grad_f(Index n, const Number* x, bool new_x, Number* grad_f)
     Index idx = 0;
     for(Index i=0; i<period;i++)
     {
-        for (Index j = 0; j < product; j += 1)
+        for (Index j = 0; j < product; j ++)
         {
         grad_f[idx] = (*prod)(j,i);
         grad_f[idx+period*product] = 2*(*beta)(j,i)*x[period*product+idx]-(*alpha)(j,i);
@@ -188,6 +177,7 @@ bool LbIpopt::eval_g(Index n, const Number* x, bool new_x, Index m, Number* g)
         {
             g[idx] += (*consumption)(j,i)*x[j+i*product];
         }
+        //printf("constraint[%d]=%f<%f\n",i,g[idx],(*constraint)(i));
         idx++;
     }
     assert(idx == m);
@@ -199,11 +189,11 @@ bool LbIpopt::eval_jac_g(Index n, const Number* x, bool new_x,
                             Index m, Index nele_jac, Index* iRow, Index *jCol,
                             Number* values) 
 {
+    Index idx =0;
     if (values == NULL) 
     {
     // return the structure of the jacobian
         //element on 3 diagonals
-        Index idx=0;
         for(Index k=0;k<3;k++)
         {
             for(Index i=0; i<period*product;i++) 
@@ -235,23 +225,22 @@ bool LbIpopt::eval_jac_g(Index n, const Number* x, bool new_x,
     else 
     {
     // return the values of the jacobian of the constraints
-        Index idx =0;
         for(Index i=0;i<period;i++)
         {
             for (Index j = 0; j < product; j++)
             {
                 //element on 3 diagonals
-                values[idx]=1.;
-                values[idx+period*product]=(*beta)(j,i);
-                values[idx+2*period*product]=-1.;
+                values[j+i*product]=1.;
+                values[j+i*product+period*product]=(*beta)(j,i);
+                values[j+i*product+2*period*product]=-1.;
                 // element due to the inequality constraint
-                values[idx+3*period*product]=(*consumption)(j,i);
+                //printf("Gcons[%d][%d]=%f\n",i,j,(*consumption)(j,i));
+                values[j+i*product+3*period*product]=(*consumption)(j,i);
                 // elements on the sub-diagonale (i_{t-1})
                 if (i<period-1)
                 {
-                    values[idx+4*period*product]=1.;
+                    values[j+i*product+4*period*product]=1.;
                 }
-                idx++;
             }
         }
     }
@@ -277,13 +266,13 @@ bool LbIpopt::eval_h(Index n, const Number* x, bool new_x,
     }
     else
     {
-        Index idx=0;
+
         for (Index i = 0; i < period; i++)
         {
             for (Index j = 0; j < product; j++)
             {
-                values[idx] = 2*(*beta)(j,i)*product_factor;
-                idx++;
+                values[j+i*product] = 2*(*beta)(j,i)*product_factor;
+
             }
         }
         assert(idx == nele_hess);
