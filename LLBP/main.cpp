@@ -43,7 +43,7 @@ int ipopt(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
         int idx = 0;
         results(idx) = -final_obj;
         idx++;
-        for (int i = 0; i < (product+1)*period; i++)
+        for (int i = product*period; i < (product+1)*period; i++)
         {
             results(idx)=problem->get_coef()(i);
             idx++;
