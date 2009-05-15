@@ -1,9 +1,15 @@
 "T";3
-"J";1
+"J";2
 "Alpha";100;100;100
+;100;100;100
 "Beta";1;1;1
+;1;1;1
 "Setup cost";3;3;3
+;3;3;3
 "Storage cost";2;2;2
+;2;2;2
 "Production cost";20;20;20
-"Consuption";2;5;3
+;20;20;20
+"Consuption";1;1;1
+;1;1;1
 "Constraint";35;15;42
