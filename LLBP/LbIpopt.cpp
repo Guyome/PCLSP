@@ -53,7 +53,7 @@ bool LbIpopt::get_bounds_info(Index n, Number* x_l, Number* x_u,
         for (Index j = 0; j < product; j ++)
         {
             x_l[j+i*product] = 0.0; // the variables are positives
-            x_u[j+i*product] = sum((*alpha)(j,Range::all()))*(*setup)(j,i);  // null in function of setup structure
+            x_u[j+i*product] = sum((*alpha)(j,Range::Range(i,period)))*(*setup)(j,i);  // null in function of setup structure
             x_l[j+i*product+product*period] = 0.0;
             x_u[j+i*product+product*period] = (*alpha)(j,i)/(*beta)(j,i);
             x_l[j+i*product+2*product*period] = 0.0;
