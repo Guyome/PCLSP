@@ -25,7 +25,7 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
     {
         //initiate price,demand since there is no storage
         t = 0;
-        price(t,t) = (alpha(j,t) + (prod(j,t) + cons(j,t)*lambda(j,t))* beta(j,t)) / (2 * beta(j,t) );
+        price(t,t) = (alpha(j,t) + (prod(j,t) + cons(j,t)*lambda(t))* beta(j,t)) / (2 * beta(j,t) );
         demand(t,t) = alpha(j,t) - beta(j,t) * price(t,t);
         c(t) = demand(t,t)*( price(t,t) - prod(j,t))-setup(j,t);
         f(t) = 0;
@@ -39,14 +39,14 @@ int thomas(Array<double,2> alpha,Array<double,2> beta, Array<double,2> prod,
             {
                 // compute price
                 price(t,t0) = (alpha(j,t) + (prod(j,t0) + sum(stor(j,Range(t0,t-1)))
-                    + cons(j,t0)*lambda(j,t0))* beta(j,t)) / (2 * beta(j,t));
+                    + cons(j,t0)*lambda(t0))* beta(j,t)) / (2 * beta(j,t));
                 // compute demand
                 demand(t,t0) = alpha(j,t) - beta(j,t) * price(t,t0);
                 // compute cost function
                 sumc = 0;
                 for (int i = t0; i <= t; i++)
                 {
-                    sumc += (prod(j,t0) + cons(j,t0)*lambda(j,t0) + sum(stor(j,Range(t0,i-1))) - price(i,t0))*demand(i,t0);
+                    sumc += (prod(j,t0) + cons(j,t0)*lambda(t0) + sum(stor(j,Range(t0,i-1))) - price(i,t0))*demand(i,t0);
                 }
                 c(t0) = sumc + setup(j,t0);
             }
