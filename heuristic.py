@@ -6,7 +6,7 @@
 
 import numpy as np
 import time
-from solvers import thomas, ipopt
+from solvers import thomas, ipopt, openopt
 from tools import import_data
 from plots import *
 from math import fabs
@@ -142,10 +142,6 @@ class HEURISTIC:
             self.storage[j,:] = self.production[j,:] - demand
         self.storage[self.storage<0] = 0
         self.storage[:, -1] = 0.
-
-    def _vector_to_tabular(self,vector):
-        vector.shape = (self.nb_obj, self.time_hor)
-        return vector
         
     def solve(self):
         """
@@ -170,14 +166,11 @@ class HEURISTIC:
             self._update_variables(ind)
             upper = self._critere()
             # compute lower bound
-            lower, self.coef, production, price, storage\
+            lower, self.coef, self.production, self.price, self.storage\
             = ipopt(self.alpha, self.beta,
                 self.cost_prod, self.cost_stor, self.cons_prod,
                 self.setup, self.constraint, self.time_hor,
                 self.nb_obj, self.verbose)
-            self.production = self._vector_to_tabular (production)
-            self.storage = self._vector_to_tabular (storage)
-            self.price = self._vector_to_tabular (price)
             # update lagrangian coefficients
             self.coef = self.smooth_param*previous_lambda\
                 - (1-self.smooth_param)*self.coef
